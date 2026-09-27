@@ -1,0 +1,373 @@
+:root{
+  --brand-green:#2f7d3c;
+  --brand-green-dark:#1f5c2a;
+  --bg-soft:#f4f7f5;
+  --card-radius:14px;
+  --muted:#8a94a6;
+
+  /* FIX: these were referenced throughout the file but never defined,
+     so every stat icon / badge / button using them had no color. */
+  --green:#2f7d3c;
+  --green-dark:#1f5c2a;
+  --green-light:#e6f4e6;
+  --orange-light:#fdf1de;
+  --orange-text:#c9871f;
+  --maroon:#b23b3b;
+
+  /* used by add-package.html but not previously defined */
+  --danger:#e05353;
+  --border:#ececec;
+  --text-muted:#8a94a6;
+}
+
+body{
+  background:var(--bg-soft);
+  font-family:'Poppins',sans-serif;
+  color:#2b2f36;
+  font-size:14px;
+}
+a{text-decoration:none;}
+
+/* Sidebar */
+.sidebar{
+  background:#fff;
+  border-radius:16px;
+  min-height:calc(100vh - 32px);
+  padding:20px 16px;
+  box-shadow:0 0 0 2px #eef6ee;
+  position:sticky;
+  top:16px;
+  align-self:flex-start;
+  display:flex;
+  flex-direction:column;
+}
+.brand-box{
+  text-align:center;
+  padding:10px 0 18px 0;
+  border-bottom:1px solid #eef1ef;
+  margin-bottom:16px;
+}
+.brand-logo img{
+  width: 50px; height: 50px; border-radius:50%;
+  object-fit:cover;
+  border:2px solid #fff;
+  box-shadow:0 0 0 2px var(--maroon);
+  flex:none;
+}
+.brand-name{
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style:italic;
+  font-weight:700;
+  margin-top:15px;
+  color: var(--brand-green-dark);
+  font-size:13px;
+  line-height:1.15;
+}
+.nav-link-custom{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;border-radius:10px;
+  color:#5b6472;font-weight:500;font-size:13.5px;
+  margin-bottom:4px;
+}
+.nav-link-custom i{font-size:16px;width:18px;text-align:center;}
+.nav-link-custom:hover{background:#f1f5f2;color:#2b2f36;}
+.nav-link-custom.active{
+  background:var(--brand-green);
+  color:#fff;
+}
+
+.promo-card{
+  background:#dff0df9a;
+  border-radius:14px;
+  box-shadow: 0 0 10px #7cb47e;
+}
+.promo-ico img{
+  width:40px;height:40px;
+}
+.promo-card h4{
+  font-size:12.5px;
+  color: var(--green-dark);
+  font-weight:700;
+}
+.promo-card p{
+  font-size:10.5px;
+  color:#a8a8a8;
+}
+
+.logout-link{
+  color:#e05353;
+  font-weight:600;
+  font-size:13px;
+  text-decoration:none;
+}
+
+/* Topbar */
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:20px;
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:var(--bg-soft);
+  padding:12px 0;
+}
+.page-title{font-weight:700;font-size:26px;margin:0;}
+
+.back-link{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:12.5px;
+  color:#8a94a6;
+  font-weight:500;
+  margin-bottom:8px;
+}
+.back-link:hover{ color:#5b6472; }
+
+.page-subtitle{
+  font-size:12.5px;
+  color:#8a94a6;
+  margin:0;
+}
+
+/* Round icon button used in the topbar (notification bell) */
+.icon-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 1px #eee;color:#5b6472;position:relative;
+  border:none;
+  cursor:pointer;
+}
+.icon-btn:hover{ background:#f4f4f4; }
+
+.admin-avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;}
+
+/* Main content */
+.form-label{
+  font-weight:500;font-size:0.88rem;margin-bottom:6px;
+}
+.form-label .req{color:var(--danger);}
+.form-control, .form-select{
+  border-radius:8px;
+  border:1px solid #d8dbe0;
+  font-size:0.9rem;
+  padding:9px 12px;
+}
+.form-control:focus,.form-select:focus{
+  border-color:var(--green);
+  box-shadow:0 0 0 0.18rem rgba(47,158,68,0.15);
+}
+.guest-range-group{display:flex;align-items:center;gap:8px;}
+.guest-range-group input{text-align:center;}
+.guest-range-group span.badge-guests{
+  background:#fff;border:1px solid #d8dbe0;border-radius:8px;
+  padding:9px 14px;font-size:0.85rem;color:#555;white-space:nowrap;
+}
+
+.status-row{display:flex;align-items:center;gap:12px;}
+.form-switch .form-check-input{
+  width:2.6em;height:1.4em;cursor:pointer;
+}
+.form-check-input:checked{background-color:var(--green);border-color:var(--green);}
+.status-label{font-weight:500;font-size:0.9rem;color:var(--green-dark);}
+.status-hint{font-size:0.75rem;color:var(--text-muted);margin-top:2px;}
+
+/* photo box */
+.photo-preview{
+  border-radius:10px;
+  height:170px;width:100%;
+  object-fit:cover;
+  border:1px solid var(--border);
+}
+.upload-btn{
+  border:1px dashed var(--green);
+  color:var(--green-dark);
+  background:#fff;
+  border-radius:8px;
+  font-size:0.85rem;
+  font-weight:500;
+  padding:8px 14px;
+  width:100%;
+  margin-top:10px;
+}
+.upload-btn:hover{background:var(--green-light);}
+.filetype-hint{
+  font-size:0.72rem;color:var(--text-muted);text-align:center;margin-top:6px;
+}
+.photo-placeholder{
+  height:170px;width:100%;
+  border-radius:10px;
+  border:1px dashed #d8dbe0;
+  background:#fafafa;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  color:var(--text-muted);
+  gap:6px;
+}
+.photo-placeholder i{font-size:1.6rem;}
+.photo-placeholder span{font-size:0.78rem;}
+
+/* menu table */
+.menu-table th{
+  background:var(--green-light);
+  font-size:0.8rem;
+  font-weight:600;
+  color:#2b2b2b;
+  border:none;
+  padding:10px 12px;
+}
+.menu-table th:first-child{border-radius:8px 0 0 8px;}
+.menu-table th:last-child{border-radius:0 8px 8px 0;text-align:center;}
+.menu-table td{
+  vertical-align:middle;
+  padding:6px 8px;
+  border:none;
+}
+.menu-row-item input, .menu-row-item select{
+  font-size:0.85rem;
+}
+.btn-delete-row{
+  background:#fbdadb;
+  border:none;
+  color:var(--danger);
+  width:36px;height:36px;
+  border-radius:8px;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.btn-delete-row:hover{background:#f6c2c3;color:#b7282c;}
+.btn-add-item{
+  border:1px solid var(--green);
+  color:var(--green-dark);
+  background:#fff;
+  border-radius:8px;
+  font-size:0.85rem;
+  font-weight:500;
+  padding:8px 16px;
+}
+.btn-add-item:hover{background:var(--green-light);}
+
+.footer-actions{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:16px 22px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.btn-delete-pkg{
+  border:1px solid var(--danger);
+  color:var(--danger);
+  background:#fff;
+  border-radius:8px;
+  font-size:0.85rem;
+  font-weight:500;
+  padding:8px 18px;
+}
+.btn-delete-pkg:hover{background:#fdecec;}
+.btn-cancel{
+  border:1px solid #d8dbe0;
+  color:#444;
+  background:#fff;
+  border-radius:8px;
+  font-size:0.85rem;
+  font-weight:500;
+  padding:8px 18px;
+}
+.btn-save{
+  background:var(--green);
+  border:none;
+  color:#fff;
+  border-radius:8px;
+  font-size:0.85rem;
+  font-weight:500;
+  padding:8px 20px;
+}
+.btn-save:hover{background:var(--green-dark);}
+
+/* preview card */
+.preview-card{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:20px;
+}
+.preview-title{font-weight:600;font-size:0.95rem;margin-bottom:10px;}
+.preview-package-name{font-weight:700;font-size:1.1rem;margin-bottom:4px;}
+.preview-stars{color:#f5b301;font-size:0.85rem;}
+.preview-reviews{font-size:0.75rem;color:var(--text-muted);}
+.preview-price{
+  color:var(--green-dark);
+  font-weight:700;
+  font-size:1.5rem;
+  margin:10px 0 4px 0;
+}
+.preview-desc{font-size:0.8rem;color:var(--text-muted);margin-bottom:14px;}
+.preview-meta{font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;}
+.inclusions-title{font-weight:600;font-size:0.85rem;margin-bottom:8px;}
+.inclusion-item{
+  font-size:0.82rem;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:8px;
+  color:#333;
+}
+.inclusion-item i{color:var(--green);font-size:0.85rem;}
+.inclusion-empty{font-size:0.8rem;color:var(--text-muted);font-style:italic;}
+
+.preview-tip-text{
+  font-size:10.5px;
+  color:#4f7a55;
+  line-height:1.4;
+}
+
+/* ===========================================================
+   Panels for: Package Information / Menu & Inclusions / Photo
+   (previously referenced in the HTML but never defined here —
+   this is why those sections had no border/background/padding)
+   =========================================================== */
+.panel{
+  background:#fff;
+  border:1px solid var(--green-light);
+  border-radius: var(--card-radius);
+  padding:20px;
+  margin-bottom:16px;
+}
+
+.panel-heading{
+  font-size:14px;
+  font-weight:700;
+  color:#1c1c1c;
+  margin-bottom:4px;
+}
+
+.panel-sub{
+  font-size:11.5px;
+  color:#8a94a6;
+  margin-bottom:16px;
+}
+
+/* Right column panel (Package Photo) */
+.panel-white{
+  background:#fff;
+  border:1px solid #ececec;
+  border-radius: var(--card-radius);
+  padding:20px;
+}
+
+/* Right column: keep Photo + Preview cards together while scrolling */
+.right-col-sticky{
+  position: sticky;
+  top: 90px;
+  align-self: flex-start;
+}
+
+@media (max-width: 991.98px){
+  .sidebar{min-height:auto;}
+  .right-col-sticky{
+    position: static;
+  }
+}

@@ -1,0 +1,79 @@
+/* ===== About Us page (extends homepage.css) ===== */
+
+/* Hero */
+.about-hero{
+  position:relative;
+  background:linear-gradient(rgba(20,20,20,0.55),rgba(20,20,20,0.55)),
+             url('https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1600&q=60') center/cover;
+  color:#fff;padding:40px 40px 34px 40px;
+}
+.about-hero h1{font-size:26px;font-weight:700;margin-bottom:8px;}
+.about-hero p{font-size:12.5px;color:#eee;max-width:600px;line-height:1.6;margin:0;}
+
+/* Our Story */
+.story-label{
+  font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--brand-yellow);
+  text-transform:uppercase;margin-bottom:6px;
+}
+.story-heading{font-size:20px;font-weight:700;color:#2b2f36;margin-bottom:10px;line-height:1.3;}
+.story-desc{font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:16px;}
+.story-img{width:100%;border-radius:var(--card-radius);object-fit:cover;height:260px;}
+.story-img-placeholder img{
+  width:100%;height:300px;border-radius:var(--card-radius);
+  background:#eef1ef;color:#c7ccd1;font-size:32px;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* Mission / Vision / Values */
+.mv-item{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;}
+.mv-item:last-child{margin-bottom:0;}
+.mv-icon{
+  width:34px;height:34px;border-radius:8px;background:#eef6ee;color:var(--brand-green);
+  display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;
+}
+.mv-title{font-size:13px;font-weight:700;color:#2b2f36;margin-bottom:2px;}
+.mv-desc{font-size:11.5px;color:var(--muted);line-height:1.5;}
+
+/* Stats row */
+.about-stats{
+  background:#fff;padding:26px 40px;
+  display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
+}
+.stat-block{display:flex;align-items:center;gap:12px;flex:1;min-width:180px;justify-content:center;}
+.stat-block .sb-icon{
+  width:42px;height:42px;border-radius:50%;background:var(--brand-green);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
+}
+.stat-block .sb-value{font-size:20px;font-weight:700;color:#2b2f36;line-height:1.1;}
+.stat-block .sb-label{font-size:11px;color:var(--muted);}
+
+/* Visit Us */
+.visit-panel{
+  background:#fff;border-radius:var(--card-radius);
+  box-shadow:0 1px 3px rgba(0,0,0,0.05);padding:22px 24px;height:100%;
+}
+.visit-title{
+  font-family: Georgia, 'Times New Roman', serif;font-style:italic;font-weight:700;
+  color:var(--brand-green-dark);font-size:20px;margin-bottom:16px;
+}
+.visit-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.visit-row:last-of-type{margin-bottom:0;}
+.visit-icon{
+  width:30px;height:30px;border-radius:50%;background:#eef6ee;color:var(--brand-green);
+  display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;
+}
+.visit-text{font-size:12px;color:#4a5261;}
+.visit-blurb{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;height:100%;padding:20px;
+}
+.visit-blurb i{font-size:26px;color:var(--brand-green);margin-bottom:10px;}
+.visit-blurb p{font-size:12.5px;color:var(--muted);line-height:1.6;margin:0;}
+
+.map-placeholder iframe{
+  width:130%;height:120%;min-height:220px;border-radius:var(--card-radius);
+  background:#eef1ef;color:#c7ccd1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:28px;
+}
