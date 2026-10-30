@@ -1,0 +1,218 @@
+/* ---- Hero ---- */
+.gallery-hero{
+  position:relative;
+  height:157px;
+  overflow:hidden;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.2) 100%),
+    url('../image/services/769013166_1490124979797930_7668920173544849492_n.jpg') center/cover;
+}
+
+.gallery-hero-circle{
+  position:absolute;
+  top:-52px;
+  left:145px;
+  width:356px;
+  height:356px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.62);
+  backdrop-filter:blur(3px);
+  padding:92px 0 0 57px;
+  text-align:left;
+}
+
+.gallery-hero-circle h1{
+  font-family:Georgia,'Times New Roman',serif;
+  font-weight:700;
+  color:#7a3b1d;
+  font-size:48px;
+  line-height:1.05;
+  margin:0;
+  white-space:nowrap;
+}
+
+.gallery-hero-line{
+  display:block;
+  width:56px;
+  height:2px;
+  background:var(--brand-green-dark);
+  margin:6px 0 4px;
+}
+
+.gallery-hero-circle p{
+  font-family:Georgia,'Times New Roman',serif;
+  font-style:italic;
+  color:#3a3a3a;
+  font-size:15px;
+  margin:0;
+  white-space:nowrap;
+}
+
+/* ===== Gallery panel (the rounded card that holds the filters + grid) =====
+   NOTE: .gallery-panel needs position:relative. The "Planning an event?" bar
+   (.g-cta) is position:absolute, so without this it was positioned against the
+   whole page and floated over the grid and the footer. */
+.gallery-wrap{
+  --g-height:560px;              /* <- change this one value to make the gallery taller/shorter */
+  padding:12px 24px 14px;
+}
+.gallery-panel{
+  position:relative;             /* keeps .g-cta inside the panel */
+  max-width:1100px;
+  margin:0 auto;
+  background:#f7f4ef;
+  border-radius:22px;
+  padding:26px 36px 30px;
+  box-shadow:0 4px 12px rgba(0,0,0,.18);
+}
+/* the footer already has its own top margin, so keep the gap tidy */
+.gallery-wrap + .site-footer{ margin-top:0; }
+
+/* ===== Filters ===== */
+.g-filters{
+  display:flex; justify-content:center; flex-wrap:wrap;
+  gap:16px; margin-bottom:22px;
+}
+.g-filter{
+  min-width:110px;
+  padding:9px 20px;
+  border:1px solid #c9dec8;
+  background:#e4f6e3;
+  color:var(--brand-green-dark);
+  border-radius:10px;
+  font-family:'Poppins',sans-serif;
+  font-size:11px; font-weight:500; letter-spacing:.3px;
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  box-shadow:0 2px 4px rgba(0,0,0,.18);
+  transition:background .2s, color .2s;
+}
+.g-filter:hover{ background:#d3f0d0; }
+.g-filter.active{ background:var(--brand-green); color:#fff; border-color:var(--brand-green); }
+
+/* ===== Grid ===== */
+.g-scroll{
+  height:var(--g-height);
+  overflow-y:auto;
+  padding:4px 8px 80px 4px;      /* bottom padding keeps the last row clear of the CTA bar */
+}
+.g-scroll::-webkit-scrollbar{ width:7px; }
+.g-scroll::-webkit-scrollbar-thumb{ background:#b5b5b5; border-radius:4px; }
+
+.g-grid{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:26px 22px;
+}
+
+.g-card{
+  background:#fff;
+  border:1px solid var(--brand-green);
+  border-radius:8px;
+  padding:9px 9px 14px;
+  box-shadow:0 2px 5px rgba(0,0,0,.18);
+  display:flex; flex-direction:column;
+  animation:gPop .3s ease;
+  transition:transform .2s, box-shadow .2s;
+}
+.g-card:hover{ transform:translateY(-3px); box-shadow:0 7px 12px rgba(0,0,0,.22); }
+@keyframes gPop{ from{opacity:0; transform:scale(.96);} to{opacity:1; transform:none;} }
+
+.g-card-img{
+  height:100px; border-radius:5px; overflow:hidden;
+  display:grid; place-items:center;
+  color:rgba(255,255,255,.85); font-size:28px;
+}
+.g-card-img img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.g-card h4{
+  font-family:Georgia,'Times New Roman',serif;
+  font-size:13px; font-weight:400;
+  margin:14px 0 8px 6px; color:#111;
+}
+.g-card p{ font-size:9px; color:#444; line-height:1.45; margin:0 0 10px 6px; }
+.g-view{
+  align-self:flex-start; margin-left:6px;
+  margin-top:auto;               /* keeps every "View Details" button on the same line */
+  background:#fff; color:var(--brand-green-dark);
+  border:1px solid var(--brand-green);
+  border-radius:6px; padding:5px 16px;
+  font-size:9.5px; font-family:'Poppins',sans-serif;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+  transition:background .2s;
+}
+.g-view:hover{ background:#e4f6e3; }
+
+.g-empty{
+  grid-column:1 / -1; text-align:center;
+  color:var(--muted); font-size:13px; padding:60px 0;
+}
+
+/* ===== CTA bar ===== */
+.g-cta{
+  position:absolute; left:50px; right:50px; bottom:10px;
+  display:flex; align-items:center; gap:14px;
+  background:#fff; border-radius:12px;
+  padding:14px 22px;
+  box-shadow:0 3px 10px rgba(0,0,0,.25);
+}
+.g-cta-icon{
+  width:36px; height:36px; border-radius:50%;
+  border:1px solid var(--brand-green); color:var(--brand-green-dark);
+  display:grid; place-items:center; font-size:15px; flex:none;
+}
+.g-cta-text{ flex:1; }
+.g-cta-text h4{ font-size:13px; font-weight:500; color:var(--brand-green-dark); margin:0; }
+.g-cta-text p{ font-size:10px; color:var(--muted); margin:3px 0 0; }
+.g-cta-btn{ border-radius:8px; padding:12px 40px; font-size:12.5px; }
+
+/* ===== Details popup ===== */
+.g-modal{
+  position:fixed; inset:0; z-index:1000;
+  background:rgba(0,0,0,.55);
+  display:none; align-items:center; justify-content:center; padding:16px;
+}
+.g-modal.open{ display:flex; }
+.g-modal-box{
+  position:relative; width:100%; max-width:400px;
+  background:#fff; border-radius:14px;
+  padding:16px 16px 22px;
+  animation:gPop .25s ease;
+}
+.g-modal-close{
+  position:absolute; top:10px; right:12px; z-index:2;
+  background:none; border:0; color:#fff; font-size:18px;
+  text-shadow:0 1px 3px rgba(0,0,0,.7);
+}
+.g-modal-img{
+  height:190px; border-radius:10px; overflow:hidden;
+  display:grid; place-items:center; font-size:48px; color:rgba(255,255,255,.85);
+}
+.g-modal-img img{ width:100%; height:100%; object-fit:cover; }
+.g-modal-box h3{ font-family:Georgia,serif; font-size:19px; margin:14px 0 6px; }
+.g-tag{
+  display:inline-block; background:#e4f6e3; color:var(--brand-green-dark);
+  font-size:11px; padding:3px 12px; border-radius:20px; margin-bottom:10px;
+}
+.g-modal-box p{ font-size:12.5px; color:#444; line-height:1.6; margin-bottom:16px; }
+
+/* ===== Responsive ===== */
+@media (max-width:1000px){
+  .g-grid{ grid-template-columns:repeat(2, 1fr); }
+  .gallery-wrap{ padding:18px 20px 14px; }
+  .gallery-panel{ padding:24px 22px 28px; }
+  .g-cta{ left:24px; right:24px; }
+}
+@media (max-width:640px){
+  .gallery-hero-circle{ left:16px; width:140px; height:140px; padding:42px 0 0 22px; }
+  .gallery-hero-circle h1{ font-size:21px; }
+  .gallery-wrap{ padding:14px 12px 14px; }
+  .gallery-panel{ padding:18px 14px 18px; }
+  .g-scroll{ height:auto; max-height:560px; padding-bottom:20px; }
+  .g-grid{ grid-template-columns:1fr; }
+  .g-card-img{ height:150px; }
+  .g-card h4{ font-size:16px; } .g-card p{ font-size:12px; } .g-view{ font-size:12px; }
+
+  /* On phones the CTA is too tall to float over the cards, so it sits below the grid instead */
+  .g-cta{ position:static; margin-top:16px; flex-wrap:wrap; }
+  .g-cta-btn{ width:100%; }
+}

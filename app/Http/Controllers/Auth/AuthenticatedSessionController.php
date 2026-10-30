@@ -32,7 +32,7 @@ public function store(LoginRequest $request): RedirectResponse
         return redirect()->route('admin.dashboard');
     }
 
-    return redirect()->route('home');
+    return redirect()->intended(route('home'));
 }
 
 public function destroy(Request $request): RedirectResponse

@@ -23,14 +23,14 @@
     <a href="{{ route('home') }}">Home</a>
     <a href="{{ route('about-us') }}" class="active">About Us</a>
     <a href="{{ route('package') }}">Packages</a>
-    <a href="#">Menu</a>
-    <a href="#">Gallery</a>
-    <a href="#">Contact</a>
+    <a href="{{ route('menu') }}">Menu</a>
+    <a href="{{ route('gallery') }}">Gallery</a>
+    <a href="{{ route('contact') }}">Contact</a>
   </nav>
   <div class="header-actions">
-<button type="button" class="btn-reserve" id="reserveNowNavBtn">
+<a href="{{ route('reservation.process1') }}" class="btn-reserve" id="reserveNowNavBtn">
     <i class="fa-regular fa-calendar-check"></i> Reserve Now
-</button>
+</a>
 
 @guest
     <a href="{{ route('login') }}" class="btn-outline-nav">
@@ -143,19 +143,21 @@
             <div class="visit-title">Visit Us</div>
             <div class="visit-row">
               <div class="visit-icon"><i class="bi bi-geo-alt"></i></div>
-              <div class="visit-text">Address not provided yet.</div>
+              <div class="visit-text">123 Barriada St. Gogon Legazpi City</div>
             </div>
             <div class="visit-row">
               <div class="visit-icon"><i class="bi bi-telephone"></i></div>
-              <div class="visit-text">Phone number not provided yet.</div>
+              <div class="visit-text">09876543234</div>
             </div>
             <div class="visit-row">
               <div class="visit-icon"><i class="bi bi-envelope"></i></div>
-              <div class="visit-text">Email not provided yet.</div>
+              <div class="visit-text">
+lolaycatering@gmail.com</div>
             </div>
             <div class="visit-row">
               <div class="visit-icon"><i class="bi bi-clock"></i></div>
-              <div class="visit-text">Business hours not provided yet.</div>
+              <div class="visit-text">Monday - Sunday
+8:00 AM - 7:00 PM</div>
             </div>
           </div>
           <div class="col-md-5">
@@ -178,10 +180,7 @@
 </div>
 
 <!-- Footer -->
-<footer class="site-footer">
-  <div class="logo-circle">🍽️</div>
-  <div class="footer-text">Lolay's<br>FOOD STATION &amp; CATERING SERVICES</div>
-</footer>
+<?php include 'footer.html'; ?>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 <script src="{{asset('js/client/homepage.js')}}"></script>

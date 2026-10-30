@@ -8,7 +8,8 @@ use Illuminate\Http\Request;
 use App\Mail\ReservationConfirmationMail;
 use Illuminate\Support\Facades\Mail;
 use App\Services\SmsService;
-
+use App\Services\SmsTemplates;
+use App\Models\Customer;
 
 
 class ReservationController extends Controller
@@ -47,7 +48,7 @@ class ReservationController extends Controller
             $query->where('event_type', $request->event_type);
         }
 
-        $reservations = $query->latest('start_date')->get();
+        $reservations = $query->orderByDesc('id')->get();
 
         return view('admin.reservation', compact('reservations', 'stats'));
     }
@@ -60,7 +61,19 @@ class ReservationController extends Controller
     // }
 public function store(Request $request)
 {
-    Reservation::create($this->validated($request));
+    $data = $this->validated($request);
+
+    Customer::firstOrCreate(
+        ['email' => $data['email']],
+        [
+            'name'          => $data['full_name'],
+            'phone'         => $data['phone'],
+            'customer_type' => 'new',
+            'status'        => 'active',
+        ]
+    );
+
+    Reservation::create($data);
 
     return redirect()
         ->route('admin.reservation')
@@ -78,86 +91,46 @@ public function sendConfirmation(
     Reservation $reservation,
     SmsService $smsService
 ) {
-    // =========================
-    // SEND EMAIL
-    // =========================
-
-    Mail::to($reservation->email)
-        ->send(
-            new ReservationConfirmationMail($reservation)
-        );
-
-
-    // =========================
-    // PREPARE PHONE NUMBER
-    // =========================
-
-    $phone = preg_replace(
-        '/\D/',
-        '',
-        $reservation->phone
-    );
-
-    // Convert:
-    // 09064112439
-    // into:
-    // 639064112439
-
-    if (str_starts_with($phone, '0')) {
-        $phone = '63' . substr($phone, 1);
+    // Cancelled reservations cannot be confirmed
+    if ($reservation->status === 'cancelled') {
+        return redirect()
+            ->route('admin.reservation')
+            ->with('error', 'This reservation is cancelled, so it cannot be confirmed.');
     }
 
+    // SEND EMAIL (if this fails, the status will not change)
+    Mail::to($reservation->email)
+        ->send(new ReservationConfirmationMail($reservation));
 
-    // =========================
-    // SMS MESSAGE
-    // =========================
+    // PENDING -> CONFIRMED
+    if ($reservation->status === 'pending') {
+        $reservation->update(['status' => 'confirmed']);
+    }
 
-    $smsMessage =
-        "Lolay's Catering Services: " .
-        "Hello {$reservation->full_name}! " .
-        "Your reservation RES-" .
-        str_pad(
-            $reservation->id,
-            4,
-            '0',
-            STR_PAD_LEFT
-        ) .
-        " has been confirmed. " .
-        "Event: {$reservation->event_title}. " .
-        "Date: " .
-        $reservation->start_date->format('F j, Y') .
-        ". Guests: {$reservation->guests}. " .
-        "Thank you for choosing Lolay's Catering Services.";
-
-
-    // =========================
-    // SEND SMS THROUGH MOCEAN
-    // =========================
-
-    $smsService->send(
-        $phone,
-        $smsMessage
+    // SEND SMS (the message says "CONFIRMED", so this runs after the status update)
+    $smsSent = $smsService->send(
+        $reservation->phone,
+        SmsTemplates::confirmation($reservation)
     );
-
-
-    // =========================
-    // RETURN TO RESERVATION PAGE
-    // =========================
 
     return redirect()
         ->route('admin.reservation')
         ->with(
-            'success',
-            'Confirmation sent successfully via email and SMS.'
+            $smsSent ? 'success' : 'error',
+            $smsSent
+                ? 'Reservation confirmed. Confirmation sent via email and SMS.'
+                : 'Reservation confirmed and email sent, but the SMS failed. Check the TextBee device and storage/logs/laravel.log.'
         );
 }
 
-    public function cancel(Reservation $reservation)
-    {
-        $reservation->update(['status' => 'cancelled']);
+public function cancel(Reservation $reservation, SmsService $smsService)
+{
+    $reservation->update(['status' => 'cancelled']);
 
-        return redirect()->route('admin.reservation')->with('success', 'Reservation cancelled.');
-    }
+    $smsService->send($reservation->phone, SmsTemplates::cancellation($reservation));
+
+    return redirect()->route('admin.reservation')->with('success', 'Reservation cancelled.');
+}
 
     public function destroy(Reservation $reservation)
     {

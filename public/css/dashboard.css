@@ -255,3 +255,132 @@ table.dash-table td{
 .pkg-price{font-size:12px;font-weight:700;margin-left:auto;}
 
 .empty-note{color:var(--muted);font-size:12px;text-align:center;padding:14px 0;}
+
+.mini-cal td.has-event { position: relative; font-weight: 600; }
+.mini-cal td.has-event::after {
+  content: '';
+  position: absolute;
+  bottom: 2px; left: 50%;
+  transform: translateX(-50%);
+  width: 5px; height: 5px;
+  border-radius: 50%;
+}
+.mini-cal td.ev-confirmed::after { background: #2f7d3c; }
+.mini-cal td.ev-pending::after   { background: #e0a419; }
+.mini-cal td.ev-conflict::after  { background: #d9534f; }
+
+/* ---------- Topbar ---------- */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+  margin-bottom:14px;
+  position:sticky;
+  top:0;
+  z-index:30; /* keeps the profile dropdown above the page content */
+  background:var(--bg-soft);
+  padding:12px 0;
+}
+
+
+.icon-btn{
+  width:38px; height:38px; border-radius:50%;
+  background:#fff; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 0 1px #eee; color:#2b2f36; position:relative;
+  border:none; cursor:pointer; font-size:17px;
+}
+.icon-btn:hover{ background:#f4f4f4; }
+
+.admin-avatar{ width:38px; height:38px; border-radius:50%; object-fit:cover; flex:none; }
+.admin-chip{
+  display:flex; align-items:center; gap:8px;
+  padding:4px 8px; border:0; border-radius:12px;
+  background:none; color:inherit; font-family:inherit; cursor:pointer;
+}
+.admin-chip:hover{ background:#fff; }
+.admin-caret{ font-size:11px; color:var(--muted); transition:transform .15s; }
+.admin-chip[aria-expanded="true"] .admin-caret{ transform:rotate(180deg); }
+
+/* ---------- Profile dropdown ---------- */
+.profile-menu{
+  --bs-dropdown-link-active-bg: var(--green-light);
+  --bs-dropdown-link-active-color: var(--green-dark);
+  --bs-dropdown-link-hover-bg: var(--green-light);
+  --bs-dropdown-link-hover-color: var(--green-dark);
+
+  min-width:190px;
+  margin-top:6px;
+  padding:6px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.08);
+  font-size:13.5px;
+}
+.profile-menu .dropdown-item{
+  display:flex; align-items:center; gap:10px;
+  padding:8px 10px; border-radius:8px;
+}
+.brand-name {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.brand-name span {
+    display: block;
+}
+.profile-menu .dropdown-item.text-danger{ color:var(--red) !important; }
+.profile-menu .dropdown-item.text-danger:hover,
+.profile-menu .dropdown-item.text-danger:focus,
+.profile-menu .dropdown-item.text-danger:active{
+  background:#fbeaea;
+  color:var(--maroon) !important;
+}
+.view-modal{
+  overflow:hidden;
+  max-height:calc(100vh - 3.5rem);
+}
+
+.topbar button:focus-visible,
+.topbar a:focus-visible{
+  outline:2px solid var(--green);
+  outline-offset:2px;
+}
+
+/* Calendar */
+.mini-cal{ width:100%; text-align:center; font-size:12px; border-collapse:collapse; flex:1; height:100%; table-layout:fixed; }
+.mini-cal th{ color:var(--muted); font-weight:600; padding:6px 0; font-size:11px; }
+.mini-cal td{ padding:6px 0; border-radius:50%; color:#4a5261; vertical-align:middle; }
+.mini-cal tbody{ height:100%; }
+.mini-cal td.today{ background:#a8a8a8; color:#fff; font-weight:700; border-radius:50%; }
+.mini-cal td.muted{ color:#d3d7dc; }
+.mini-cal td:not(.muted):hover{ background:#eef1ef; cursor:pointer; }
+.mini-cal td.today:hover{ background:#8a8a8a; }
+.col-lg-4 .panel:has(.mini-cal){ display:flex; flex-direction:column; }
+
+/* Reservation dots */
+.mini-cal td.has-event{ position:relative; font-weight:600; }
+.mini-cal td.has-event::after{
+  content:''; position:absolute; bottom:3px; left:50%;
+  transform:translateX(-50%); width:5px; height:5px; border-radius:50%;
+}
+.mini-cal td.ev-confirmed::after{ background:#2f7d3c; }
+.mini-cal td.ev-pending::after{   background:#e0a419; }
+.mini-cal td.ev-conflict::after{  background:#d9534f; }
+.mini-cal td.today.has-event::after{ box-shadow:0 0 0 1.5px #fff; }
+
+#newReservationModal form{
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  max-height:calc(100vh - 3.5rem);
+}
+#newReservationModal .modal-body{
+  overflow-y:auto;
+  min-height:0;
+}
+#newReservationModal .modal-header,
+#newReservationModal .modal-footer{
+  flex-shrink:0;
+}

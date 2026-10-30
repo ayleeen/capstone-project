@@ -1,0 +1,74 @@
+body { background: #f4f6f4; font-family: 'Poppins', sans-serif; }
+
+.ps-wrap { max-width: 1100px; margin: 30px auto; padding: 0 16px; }
+
+.ps-back { color: #6b7280; font-size: 14px; text-decoration: none; }
+.ps-back:hover { color: #1f6b34; text-decoration: underline; }
+.ps-title { font-family: Georgia, serif; font-weight: 700; font-size: 34px; margin: 6px 0 2px; color: #111827; }
+.ps-sub { color: #6b7280; font-size: 13px; margin-bottom: 20px; }
+
+.ps-card { background: #fff; border: 1px solid #1f6b34; border-radius: 12px; padding: 24px; }
+
+.ps-photo-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, .1);
+  padding: 24px;
+  text-align: center;
+}
+.ps-photo-card h6 { color: #1f6b34; font-weight: 600; margin-bottom: 2px; text-align: left; }
+.ps-photo-card small { color: #6b7280; display: block; text-align: left; margin-bottom: 18px; }
+.ps-avatar { width: 115px; height: 115px; border-radius: 50%; object-fit: cover; margin-bottom: 18px; }
+
+.btn-ps-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: #1f6b34;
+  border: 1px solid #1f6b34;
+  border-radius: 8px;
+  padding: 9px 22px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.btn-ps-outline:hover { background: #eef7f0; }
+
+.ps-remove {
+  display: inline-block;
+  margin-top: 12px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid #1f6b34;
+  color: #1f6b34;
+  font-size: 13px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.ps-section { color: #1f6b34; font-weight: 600; font-size: 22px; margin-bottom: 4px; }
+.ps-hint { color: #6b7280; font-size: 12px; margin-bottom: 12px; }
+
+.ps-label { font-size: 13px; color: #111827; margin-bottom: 4px; }
+.ps-label .req { color: #dc2626; }
+.ps-input {
+  width: 100%;
+  border: 1px solid #1f6b34;
+  border-radius: 8px;
+  padding: 11px 12px;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+.ps-input:focus { outline: none; box-shadow: 0 0 0 3px rgba(31, 107, 52, .15); }
+
+.btn-ps-save {
+  background: #eef7f0;
+  color: #1f6b34;
+  border: 1px solid #1f6b34;
+  border-radius: 8px;
+  padding: 12px 40px;
+  font-size: 17px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn-ps-save:hover { background: #1f6b34; color: #fff; }

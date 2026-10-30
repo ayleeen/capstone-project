@@ -13,6 +13,8 @@
 <body>
 
 <!-- Top navbar -->
+ <!-- Top navbar -->
+<!-- @include('client-header') -->
 <header class="site">
   <div class="brand">
     <img src="../image/lolaysLogo.jpg" alt="Lolay's logo" class="logo-img">
@@ -22,14 +24,14 @@
     <a href="{{ route('home') }}" class="active">Home</a>
     <a href="{{ route('about-us') }}">About Us</a>
     <a href="{{ route('package') }}">Packages</a>
-    <a href="#">Menu</a>
-    <a href="#">Gallery</a>
-    <a href="#">Contact</a>
+    <a href="{{ route('menu') }}">Menu</a>
+    <a href="{{ route('gallery') }}">Gallery</a>
+    <a href="{{ route('contact') }}">Contact</a>
   </nav>
   <div class="header-actions">
-<button type="button" class="btn-reserve" id="reserveNowNavBtn">
+<a href="{{ route('reservation.process1') }}" class="btn-reserve" id="reserveNowNavBtn">
     <i class="fa-regular fa-calendar-check"></i> Reserve Now
-</button>
+</a>
 
 @guest
     <a href="{{ route('login') }}" class="btn-outline-nav">
@@ -38,12 +40,40 @@
 @endguest
 
 @auth
-    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-        @csrf
-        <button type="submit" class="btn-outline-nav">
+  @php
+    $user = auth()->user();
+    $avatar = !empty($user->profile_photo)
+        ? asset('storage/' . $user->profile_photo)
+        : 'https://ui-avatars.com/api/?background=random&name=' . urlencode($user->name);
+  @endphp
+
+  <div class="dropdown profile-dropdown">
+    <button class="profile-chip" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <img src="{{ $avatar }}" class="profile-avatar" alt="">
+      <span class="profile-text">
+        <span class="profile-name">{{ $user->name }}</span>
+        <span class="profile-role">Customer</span>
+      </span>
+      <i class="bi bi-chevron-down profile-caret"></i>
+    </button>
+
+    <ul class="dropdown-menu dropdown-menu-end profile-menu">
+      <li>
+        <a class="dropdown-item" href="{{ route('profile.edit') }}">
+          <i class="bi bi-person"></i> My Profile
+        </a>
+      </li>
+      <li><hr class="dropdown-divider"></li>
+      <li>
+        <form method="POST" action="{{ route('logout') }}" onsubmit="sessionStorage.clear()">
+          @csrf
+          <button type="submit" class="dropdown-item text-danger">
             <i class="bi bi-box-arrow-right"></i> Logout
-        </button>
-    </form>
+          </button>
+        </form>
+      </li>
+    </ul>
+  </div>
 @endauth
 
 <button type="button" class="nav-toggle-btn" id="navToggleBtn" aria-label="Toggle menu">
@@ -151,18 +181,84 @@
 <div class="container" style="max-width:1100px;">
 
   <!-- Our Services -->
-  <div class="section-header"><span>Our Services</span></div>
-  <div class="section-empty-note mb-4">
-    <i class="bi bi-grid-3x3-gap"></i>
-    No services available yet
+<div class="section-header"><span>Our Services</span></div>
+
+<div class="row g-3 mb-4">
+
+  <div class="col-6 col-md-3">
+    <div class="service-card">
+      <img src="{{ asset('image//wedding.jpg') }}" alt="Wedding">
+      <div class="service-title">Wedding</div>
+    </div>
   </div>
 
+  <div class="col-6 col-md-3">
+    <div class="service-card">
+      <img src="{{ asset('image/859884544_2577629652700102_5420390211546807245_n.jpg') }}" alt="Birthday">
+      <div class="service-title">Birthday</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="service-card">
+      <img src="{{ asset('image/christening.jpg') }}" alt="Corporate Event">
+      <div class="service-title">Christening</div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="service-card">
+      <img src="{{ asset('image/769013166_1490124979797930_7668920173544849492_n.jpg') }}" alt="Debut">
+      <div class="service-title">Debut</div>
+    </div>
+  </div>
+
+</div>
   <!-- Featured Packages -->
   <div class="section-header" id="featuredPackages"><span>Featured Packages</span></div>
-  <div class="section-empty-note mb-4">
-    <i class="bi bi-box-seam"></i>
-    No packages available yet
-  </div>
+
+  @if($packages->count())
+    <div class="fp-row mb-4">
+      @foreach($packages as $package)
+        @php
+          // Hinihiwalay ang description sa bawat bagong linya o comma para maging bullets
+          $items = preg_split('/[\r\n,]+/', (string) $package->description, -1, PREG_SPLIT_NO_EMPTY);
+        @endphp
+
+        <div class="fp-card">
+          <div class="fp-info">
+            <span class="fp-tag">{{ $package->package_name }}</span>
+
+            <div class="fp-pax">
+              <i class="bi bi-people"></i>
+              {{ $package->guest_min }} - {{ $package->guest_max }} PAX
+            </div>
+
+            <ul class="fp-list">
+              @foreach(array_slice($items, 0, 4) as $item)
+                <li>{{ trim($item) }}</li>
+              @endforeach
+            </ul>
+
+            <div class="fp-price">₱ {{ number_format($package->price, 0) }}</div>
+          </div>
+
+          <div class="fp-photo">
+            @if($package->photo)
+              <img src="{{ asset('storage/' . $package->photo) }}" alt="{{ $package->package_name }}">
+            @else
+              <div class="fp-photo-empty"><i class="bi bi-image"></i></div>
+            @endif
+          </div>
+        </div>
+      @endforeach
+    </div>
+  @else
+    <div class="section-empty-note mb-4">
+      <i class="bi bi-box-seam"></i>
+      No packages available yet
+    </div>
+  @endif
 
   <!-- How It Works -->
   <div class="row g-3 mb-5">
@@ -210,10 +306,7 @@
 </div>
 
 <!-- Footer -->
-<footer class="site-footer">
-  <div class="logo-circle">🍽️</div>
-  <div class="footer-text">Lolay's<br>FOOD STATION &amp; CATERING SERVICES</div>
-</footer>
+<?php include 'footer.html'; ?>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 <script src="{{asset('js/client/homepage.js')}}"></script>

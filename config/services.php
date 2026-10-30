@@ -34,9 +34,15 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-    'mocean' => [
-    'api_token' => env('MOCEAN_API_TOKEN'),
-    'sender_name' => env('MOCEAN_SENDER_NAME'),
+'textbee' => [
+    'device_id' => env('TEXTBEE_DEVICE_ID'),
+    'api_key'   => env('TEXTBEE_API_KEY'),
+],
+
+'google' => [
+    'client_id' => env('GOOGLE_CLIENT_ID'),
+    'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+    'redirect' => env('GOOGLE_REDIRECT_URI'),
 ],
 
 ];

@@ -10,6 +10,8 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\OtpVerificationController;
+use App\Http\Controllers\Auth\PasswordOtpController;
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
@@ -25,8 +27,20 @@ Route::middleware('guest')->group(function () {
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 
-    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
-        ->name('password.email');
+Route::post('forgot-password', [PasswordOtpController::class, 'sendCode'])
+    ->middleware('throttle:5,1')->name('password.email');
+
+Route::get('forgot-password/verify', [PasswordOtpController::class, 'showVerify'])
+    ->name('password.otp');
+Route::post('forgot-password/verify', [PasswordOtpController::class, 'verify'])
+    ->middleware('throttle:10,1')->name('password.otp.verify');
+Route::post('forgot-password/resend', [PasswordOtpController::class, 'resend'])
+    ->middleware('throttle:3,1')->name('password.otp.resend');
+
+Route::get('forgot-password/new', [PasswordOtpController::class, 'showNewPassword'])
+    ->name('password.new');
+Route::post('forgot-password/new', [PasswordOtpController::class, 'updatePassword'])
+    ->name('password.new.update');
 
     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
         ->name('password.reset');
@@ -36,16 +50,15 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('verify-email', EmailVerificationPromptController::class)
+    Route::get('verify-email', [OtpVerificationController::class, 'show'])
         ->name('verification.notice');
 
-    Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
-        ->middleware(['signed', 'throttle:6,1'])
-        ->name('verification.verify');
+    Route::post('verify-otp', [OtpVerificationController::class, 'verify'])
+        ->name('verification.otp');
 
-    Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
-        ->middleware('throttle:6,1')
-        ->name('verification.send');
+    Route::post('verify-otp/resend', [OtpVerificationController::class, 'resend'])
+        ->middleware('throttle:3,1')
+        ->name('verification.resend');
 
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
         ->name('password.confirm');

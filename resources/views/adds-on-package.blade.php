@@ -23,15 +23,15 @@
     <a href="{{ route('home') }}" >Home</a>
     <a href="{{ route('about-us') }}">About Us</a>
     <a href="{{ route('package') }}" class="active">Packages</a>
-    <a href="menu.html">Menu</a>
-    <a href="#">Gallery</a>
-    <a href="#">Contact</a>
+    <a href="{{ route('menu') }}">Menu</a>
+    <a href="{{ route('gallery') }}">Gallery</a>
+    <a href="{{ route('contact') }}">Contact</a>
   </nav>
   
   <div class="header-actions">
-<button type="button" class="btn-reserve" id="reserveNowNavBtn">
+<a href="{{ route('reservation.process1') }}" class="btn-reserve" id="reserveNowNavBtn">
     <i class="fa-regular fa-calendar-check"></i> Reserve Now
-</button>
+</a>
 
 @guest
     <a href="{{ route('login') }}" class="btn-outline-nav">
@@ -92,10 +92,7 @@
 </div>
 
 <!-- Footer (shared — do not change per tab) -->
-<footer class="site-footer">
-  <div class="logo-circle">🍽️</div>
-  <div class="footer-text">Lolay's<br>FOOD STATION &amp; CATERING SERVICES</div>
-</footer>
+<?php include 'footer.html'; ?>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 <script src="{{ asset('js/client/homepage.js')}}"></script>

@@ -191,8 +191,9 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Form submit
+// Form submit
 menuItemForm?.addEventListener('submit', (e) => {
-  if(!itemName?.value.trim() || !itemDescription?.value.trim() || !itemCategory?.value || !itemPrice?.value){
+  if(!itemName?.value.trim() || !itemDescription?.value.trim() || !itemCategory?.value){
     e.preventDefault();
     alert('Please fill in all required fields marked with *.');
     return;

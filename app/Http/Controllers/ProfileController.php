@@ -2,39 +2,81 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Display the user's profile page.
      */
     public function edit(Request $request): View
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+                return view('profile', [
+                'user' => $request->user(),
+            ]);
     }
 
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $data = $request->validate([
+            'first_name'      => 'required|string|max:255',
+            'last_name'       => 'required|string|max:255',
+            'email'           => 'required|email|max:255|unique:users,email,' . $user->id,
+            'contact_number'  => 'nullable|string|max:30',
+            'secondary_phone' => 'nullable|string|max:30',
+            'address_line1'   => 'nullable|string|max:255',
+            'address_line2'   => 'nullable|string|max:255',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+        ]);
+
+        if ($request->hasFile('photo')) {
+            if ($user->profile_photo) {
+                Storage::disk('public')->delete($user->profile_photo);
+            }
+            $data['profile_photo'] = $request->file('photo')->store('profiles', 'public');
         }
 
-        $request->user()->save();
+        unset($data['photo']);
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        // Naka-MustVerifyEmail ang model: kapag nagpalit ng email, kailangan ulit i-verify
+        $emailChanged = $data['email'] !== $user->email;
+        if ($emailChanged) {
+            $data['email_verified_at'] = null;
+        }
+
+        $user->forceFill($data)->save();
+
+        if ($emailChanged) {
+            $user->sendEmailVerificationNotification();
+            return back()->with('success', 'Profile updated. Please verify your new email address.');
+        }
+
+        return back()->with('success', 'Profile updated successfully.');
+    }
+
+    /**
+     * Remove the user's profile photo.
+     */
+    public function removePhoto(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($user->profile_photo) {
+            Storage::disk('public')->delete($user->profile_photo);
+            $user->forceFill(['profile_photo' => null])->save();
+        }
+
+        return back()->with('success', 'Profile photo removed.');
     }
 
     /**

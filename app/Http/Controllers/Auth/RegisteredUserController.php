@@ -57,7 +57,7 @@ public function store(Request $request): RedirectResponse
         'password' => Hash::make($request->password),
     ]);
 
-    event(new Registered($user));
+    OtpVerificationController::sendCode($user);
 
     Auth::login($user);
 

@@ -120,8 +120,8 @@ public function index(Request $request)
         $data = $request->validate([
             'name'        => 'required|string|max:255',
             'description' => 'required|string',
-            'category'    => 'required|in:Appetizer,Main Dish,Rice,Drinks,Dessert,Add-on',
-            'price'       => 'required|numeric|min:0',
+            'category' => 'required|in:pasta,vegetable,salad,beef,chicken,pork,fish,dessert,juice',
+            'price'    => 'nullable|numeric|min:0',
             'is_active'   => 'sometimes|boolean',
             'prep_time'   => 'nullable|string|max:100',
             'spicy_level' => 'nullable|in:Mild,Medium,Spicy,Very Spicy',

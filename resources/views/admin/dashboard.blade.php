@@ -5,37 +5,70 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lolay's Catering Services - Dashboard</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Georgia&display=swap" rel="stylesheet">
 <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
+<link href="{{ asset ('css/nav.css') }}" rel="stylesheet">
 </head>
 <body>
 <div class="container-fluid p-3">
   <div class="row g-3">
 
-    <!-- SIDEBAR -->
-    <div class="col-lg-2">
-      <div class="sidebar d-flex flex-column">
-        <div class="brand-box">
+      <!-- SIDEBAR -->
+      <div class="col-lg-2">
+        <div class="sidebar d-flex flex-column">
+          <div class="brand-box">
           <div class="brand-logo">
-             <img src="{{ asset('image/lolaysLogo.jpg') }}" alt="">
-          </div>
-          <div class="brand-name">Lolay's Catering<br>Services</div>
-        </div>
-        <nav class="flex-grow-1">
-          <a href="{{ route('admin.dashboard') }}" class="nav-link-custom active">
-    <i class="bi bi-grid-1x2-fill"></i> Dashboard
+                  <a href="{{ route('admin.logo') }}">
+    <img src="{{ $businessProfile->logo_url }}" alt="Business Logo">
 </a>
-          <a href="{{ route('admin.reservation') }}" class="nav-link-custom"><i class="bi bi-journal-text"></i> Reservation</a>
-          <a href="{{ route('admin.calendar') }}" class="nav-link-custom"><i class="bi bi-calendar3"></i> Calendar/ Schedule</a>
-          <a href="{{ route('admin.packages') }}" class="nav-link-custom"><i class="bi bi-box-seam"></i> Packages</a>
-          <a href="{{ route('admin.menu') }}" class="nav-link-custom "><i class="bi bi-egg-fried"></i> Menu</a>
-           <a href="{{ route('admin.customer') }}" class="nav-link-custom "><i class="bi bi-person"></i> Customer</a>
-          <a href="reports.html" class="nav-link-custom"><i class="bi bi-bar-chart"></i> Reports</a>
-          <a href="reviews.html" class="nav-link-custom"><i class="bi bi-star"></i> Reviews</a>
-          <a href="settings.html" class="nav-link-custom"><i class="bi bi-gear"></i> Settings</a>
-      </nav> 
+                  
+          </div>
+            @php
+    $businessName = trim(
+        $businessProfile->business_name ?? "Lolay's Catering Services"
+    );
+
+    $words = preg_split('/\s+/', $businessName);
+    $firstLine = implode(' ', array_slice($words, 0, 2));
+    $secondLine = implode(' ', array_slice($words, 2));
+@endphp
+
+<div class="brand-name">
+    {{ $firstLine }}@if($secondLine !== '')<br>{{ $secondLine }}@endif
+</div>
+          </div>
+          <nav class="flex-grow-1">
+            <a href="{{ route('admin.dashboard') }}" class="nav-link-custom active">
+      <i class="bi bi-grid-1x2-fill"></i> Dashboard
+  </a>
+            <a href="{{ route('admin.reservation') }}" class="nav-link-custom"><i class="bi bi-journal-text"></i> Reservation</a>
+            <a href="{{ route('admin.calendar') }}" class="nav-link-custom"><i class="bi bi-calendar3"></i> Calendar/ Schedule</a>
+            <a href="{{ route('admin.packages') }}" class="nav-link-custom"><i class="bi bi-box-seam"></i> Packages</a>
+            <a href="{{ route('admin.menu') }}" class="nav-link-custom "><i class="bi bi-egg-fried"></i> Menu</a>
+            <a href="{{ route('admin.customer') }}" class="nav-link-custom "><i class="bi bi-person"></i> Customer</a>
+            <a href="{{ route('admin.archive') }}" class="nav-link-custom "><i class="bi bi-archive"></i> Archive</a>
+            <a href="{{ route('admin.audit') }}" class="nav-link-custom "><i class="bi bi-clipboard-check"></i> Audit Logs</a>
+            <a href="{{ route('admin.reports') }}" class="nav-link-custom"><i class="bi bi-bar-chart"></i> Reports</a>
+            <a href="{{ route('admin.settings') }}" class="nav-link-custom"><i class="bi bi-gear"></i> Settings</a>
+        </nav> 
+        <div class="promo-card p-3 text-center mt-auto">
+
+                    <div class="promo-ico rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2">
+                        <img src="{{ asset('image/download.png') }}" alt="Promo">
+                    </div>
+
+                    <h4 class="mb-1">
+                        Delicious Events<br>
+                        Memorable Moments
+                    </h4>
+
+                    <p class="mb-0">
+                        We make every occasion extra special.
+                    </p>
+
+                </div>
     </div>
     </div>
     
@@ -46,8 +79,15 @@
       <!-- Topbar -->
       <div class="topbar">
         <h1 class="page-title">Dashboard</h1>
-        <div class="d-flex align-items-center gap-3">
-          <div class="icon-btn"><i class="bi bi-bell"></i></div>
+        <!-- <div class="d-flex align-items-center gap-3">
+          <div class="icon-btn position-relative">
+  <i class="bi bi-bell"></i>
+  @if(auth()->user()->unreadNotifications->count())
+    <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">
+      {{ auth()->user()->unreadNotifications->count() }}
+    </span>
+  @endif
+</div>
           <div class="dropdown">
             <div class="d-flex align-items-center gap-2" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer;">
               <img src="https://i.pravatar.cc/100?img=12" class="admin-avatar" alt="Admin">
@@ -61,10 +101,83 @@
                 <form method="POST" action="{{ route('logout') }}">
                   @csrf
                   <button type="submit" class="dropdown-item">
-                    <i class="bi bi-box-arrow-right"></i> Logout
+                                  <li><a class="dropdown-item" href="profile.html"><i class="bi bi-person"></i> My Profile</a></li>
+              <li><a class="dropdown-item" href="{{ route('admin.settings') }}"><i class="bi bi-gear"></i> Settings</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
                   </button>
                 </form>
               </li>
+            </ul>
+          </div> -->
+                  <div class="d-flex align-items-center gap-3">
+@auth
+  @php
+    $unreadCount = auth()->user()->unreadNotifications()->count();
+    $recentNotifications = auth()->user()->notifications()->latest()->take(5)->get();
+  @endphp
+
+  <div class="dropdown">
+    <button class="icon-btn position-relative border-0 bg-transparent"
+            type="button"
+            data-bs-toggle="dropdown"
+            data-bs-auto-close="outside"
+            aria-expanded="false"
+            aria-label="Notifications">
+      <i class="bi bi-bell"></i>
+      @if($unreadCount > 0)
+        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">
+          {{ $unreadCount > 99 ? '99+' : $unreadCount }}
+        </span>
+      @endif
+    </button>
+
+    <div class="dropdown-menu dropdown-menu-end p-0 shadow" style="width: 320px;">
+      <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+        <strong>Notifications</strong>
+        @if($unreadCount > 0)
+          <form method="POST" action="{{ route('notifications.readAll') }}">
+            @csrf
+            <button class="btn btn-link btn-sm p-0 text-decoration-none">Mark all as read</button>
+          </form>
+        @endif
+      </div>
+
+      <div style="max-height: 320px; overflow-y: auto;">
+        @forelse($recentNotifications as $notif)
+          <div class="px-3 py-2 border-bottom {{ $notif->read_at ? '' : 'bg-light' }}">
+            <div class="fw-semibold small">{{ $notif->data['title'] ?? 'Notification' }}</div>
+            <div class="small text-muted">{{ $notif->data['message'] ?? '' }}</div>
+            <div class="text-secondary" style="font-size: 12px;">{{ $notif->created_at->diffForHumans() }}</div>
+          </div>
+        @empty
+          <p class="text-center text-muted py-4 mb-0 small">Wala pang notifications.</p>
+        @endforelse
+      </div>
+    </div>
+  </div>
+@endauth
+          <div class="dropdown">
+            <button class="admin-chip" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <img src="https://i.pravatar.cc/100?img=12" class="admin-avatar" alt="">
+              <span class="text-start">
+                <span class="d-block" style="font-weight:600;font-size:13px;">Admin User</span>
+                <span class="d-block" style="font-size:10.5px;color:var(--muted);">Administrator</span>
+              </span>
+              <i class="bi bi-chevron-down admin-caret"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end profile-menu">
+              <li><a class="dropdown-item" href="profile.html"><i class="bi bi-person"></i> My Profile</a></li>
+              <li><a class="dropdown-item" href="{{ route('admin.settings') }}"><i class="bi bi-gear"></i> Settings</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+  <form method="POST" action="{{ route('logout') }}">
+    @csrf
+    <button type="submit" class="dropdown-item text-danger">
+      <i class="bi bi-box-arrow-right"></i> Logout
+    </button>
+  </form>
+</li>
             </ul>
           </div>
         </div>
@@ -251,29 +364,31 @@
                   New Reservation
                 </a>
               </div>
-              <div class="col-4">
-                <div class="quick-action">
+              <div class="col-4">               
+                <a href="{{ route('admin.calendar', ['new' => 1]) }}" class="quick-action text-decoration-none d-block">
                   <div class="qa-icon" style="background:#e0a419;"><i class="bi bi-calendar3"></i></div>
-                  View Calendar
-                </div>
+                  View Calendar              
+              </a>
               </div>
               <div class="col-4">
-                <div class="quick-action">
+                <a href="{{ route('admin.reports', ['new' => 1]) }}" class="quick-action text-decoration-none d-block">
                   <div class="qa-icon" style="background:#3f8ed9;"><i class="bi bi-graph-up"></i></div>
                   Generate Report
-                </div>
+                </a>
               </div>
               <div class="col-4">
-                <div class="quick-action">
-                  <div class="qa-icon" style="background:#7a4fd1;"><i class="bi bi-box-seam"></i></div>
+              <a href="{{ route('admin.packages.create') }}" class="quick-action text-decoration-none d-block">
+                  <div class="qa-icon" style="background:#7a4fd1;">
+                      <i class="bi bi-box-seam"></i>
+                  </div>
                   Add Package
-                </div>
+              </a>
               </div>
               <div class="col-4">
-                <div class="quick-action">
+                <a href="{{ route('admin.customer', ['new' => 1]) }}" class="quick-action text-decoration-none d-block">
                   <div class="qa-icon" style="background:#d9534f;"><i class="bi bi-people"></i></div>
                   Manage Client
-                </div>
+                </a>
               </div>
             </div>
           </div>
@@ -286,31 +401,44 @@
               <a href="#" class="panel-link">View All</a>
             </div>
             <div id="upcomingEvents">
-              <div class="empty-note">No upcoming events</div>
-            </div>
+  @forelse($upcomingEvents as $e)
+    <div class="d-flex justify-content-between align-items-start py-2 border-bottom">
+      <div>
+        <div style="font-size:12.5px;font-weight:600;">{{ $e->event_title }}</div>
+        <div style="font-size:10.5px;color:var(--muted);">
+          {{ $e->full_name }} · {{ optional($e->start_date)->format('M j, Y') }}
+        </div>
+      </div>
+      <span class="badge {{ $e->status === 'confirmed' ? 'bg-success' : 'bg-warning text-dark' }}">
+        {{ ucfirst($e->status) }}
+      </span>
+    </div>
+  @empty
+    <div class="empty-note">No upcoming events</div>
+  @endforelse
+</div>
           </div>
         </div>
 
-        <div class="col-lg-4">
-          <div class="panel h-100">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              
-              <button class="btn btn-sm btn-light border" id="calPrev"><i class="bi bi-chevron-left"></i></button>
-              <div class="panel-title mb-0" id="calTitle">Loading…</div>
-              
-              <button class="btn btn-sm btn-light border" id="calNext"><i class="bi bi-chevron-right"></i></button>
-            </div>
-            <table class="mini-cal">
-              <thead><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></thead>
-              <tbody id="calBody"></tbody>
-            </table>
-            <div class="d-flex gap-3 mt-2" style="font-size:10.5px;">
-              <span><span class="dot" style="background:#2f7d3c;"></span>Confirmed</span>
-              <span><span class="dot" style="background:#e0a419;"></span>Pending</span>
-              <span><span class="dot" style="background:#d9534f;"></span>Conflict</span>
-            </div>
-          </div>
-        </div>
+<div class="col-lg-4">
+  <div class="panel h-100">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <button class="btn btn-sm btn-light border" id="calPrev"><i class="bi bi-chevron-left"></i></button>
+      <div class="panel-title mb-0" id="calTitle">Loading…</div>
+      <button class="btn btn-sm btn-light border" id="calNext"><i class="bi bi-chevron-right"></i></button>
+    </div>
+    <div class="d-flex gap-3 mt-2" style="font-size:10.5px;">
+      <span><span class="dot" style="background:#a8a8a8;"></span>No Reservation</span>
+      <span><span class="dot" style="background:#2f7d3c;"></span>Confirmed</span>
+      <span><span class="dot" style="background:#e0a419;"></span>Pending</span>
+      <span><span class="dot" style="background:#d9534f;"></span>Conflict</span>
+    </div>
+    <table class="mini-cal">
+      <thead><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></thead>
+      <tbody id="calBody"></tbody>
+    </table>
+  </div>
+</div>
       </div>
 
       <!-- Bottom row: reservations table | notifications + best selling -->
@@ -319,7 +447,7 @@
           <div class="panel">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <div class="panel-title mb-0">Recent Reservation</div>
-              <a href="#" class="panel-link">View All</a>
+              <a href="{{ route('admin.reservation') }}" class="panel-link">View All</a>
             </div>
             <div class="table-responsive">
               <table class="table dash-table mb-0">
@@ -328,11 +456,33 @@
                     <th>ID</th><th>Client</th><th>Event Type</th><th>Package</th><th>Status</th><th>Payment</th><th>Action</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td colspan="7" class="empty-note">No reservations yet</td>
-                  </tr>
-                </tbody>
+<tbody>
+  @forelse($recentReservations as $res)
+    <tr>
+      <td>{{ $res->id }}</td>
+      <td>{{ $res->full_name }}</td>
+      <td>{{ ucfirst($res->event_type) }}</td>
+      <td>{{ $res->package ?? '—' }}</td>
+      <td>
+        <span class="badge
+          @if($res->status === 'confirmed') bg-success
+          @elseif($res->status === 'pending') bg-warning text-dark
+          @elseif($res->status === 'cancelled') bg-danger
+          @else bg-secondary @endif">
+          {{ ucfirst($res->status) }}
+        </span>
+      </td>
+      <td>{{ ucfirst($res->payment_status) }}</td>
+      <td>
+        <a href="{{ route('admin.reservation') }}" class="btn btn-sm btn-light border">View</a>
+      </td>
+    </tr>
+  @empty
+    <tr>
+      <td colspan="7" class="empty-note">No reservations yet</td>
+    </tr>
+  @endforelse
+</tbody>
               </table>
             </div>
           </div>
@@ -344,9 +494,25 @@
               <div class="panel-title mb-0">Notifications</div>
               <a href="#" class="panel-link">View All</a>
             </div>
-            <div id="notifList">
-              <div class="empty-note">No notifications</div>
-            </div>
+<div id="notifList">
+  @forelse($notifications as $n)
+    <div class="d-flex justify-content-between align-items-start py-2 border-bottom">
+      <div>
+        <div style="font-size:12.5px; {{ $n->read_at ? '' : 'font-weight:600;' }}">
+          {{ $n->data['message'] ?? 'Notification' }}
+        </div>
+        <div style="font-size:10.5px;color:var(--muted);">
+          {{ $n->created_at->diffForHumans() }}
+        </div>
+      </div>
+      @if(!$n->read_at)
+        <span class="dot" style="background:#d9534f;"></span>
+      @endif
+    </div>
+  @empty
+    <div class="empty-note">No notifications</div>
+  @endforelse
+</div>
           </div>
 
           <div class="panel">
@@ -355,8 +521,15 @@
               <a href="#" class="panel-link">View All</a>
             </div>
             <div id="pkgList">
-              <div class="empty-note">No package data</div>
-            </div>
+  @forelse($bestPackages as $p)
+    <div class="d-flex justify-content-between py-2 border-bottom">
+      <span style="font-size:12.5px;">{{ $p->package }}</span>
+      <span style="font-size:12.5px;font-weight:600;">{{ $p->total }} bookings</span>
+    </div>
+  @empty
+    <div class="empty-note">No package data</div>
+  @endforelse
+</div>
           </div>
         </div>
       </div>
@@ -366,6 +539,9 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script>
+  window.calendarEvents = @json($calendarEvents);
+</script>
 <script src="{{ asset('js/dashboard.js') }}"></script>
 </body>
 </html>

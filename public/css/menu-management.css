@@ -731,3 +731,455 @@ a{text-decoration:none;}
     position: static;
   }
 }
+/* =========================================================
+   MENU DETAILS SIDE PANEL
+========================================================= */
+
+.menu-details-panel {
+    display: none;
+
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+
+    padding: 20px;
+
+    width: 100%;
+}
+
+
+/* SHOW PANEL */
+
+.menu-details-panel.show {
+    display: block;
+}
+
+
+/* HEADER */
+
+.menu-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    margin-bottom: 18px;
+}
+
+.menu-details-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--green-dark);
+}
+
+.menu-details-subtitle {
+    font-size: 10.5px;
+    color: var(--muted);
+
+    margin-top: 3px;
+}
+
+
+/* CLOSE BUTTON */
+
+.menu-details-close {
+    border: none;
+    background: transparent;
+
+    color: #8a94a6;
+
+    font-size: 15px;
+
+    width: 28px;
+    height: 28px;
+
+    border-radius: 6px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+}
+
+.menu-details-close:hover {
+    background: #f4f4f4;
+    color: #333;
+}
+
+
+/* IMAGE */
+
+.menu-detail-image {
+    width: 100%;
+    height: 160px;
+
+    object-fit: cover;
+
+    border-radius: 10px;
+
+    background: #f4f4f4;
+
+    margin-bottom: 16px;
+}
+
+
+/* MENU NAME */
+
+.menu-detail-name {
+    font-size: 17px;
+    font-weight: 700;
+
+    color: #1c1c1c;
+
+    margin: 0 0 4px 0;
+}
+
+
+/* PRICE */
+
+.menu-detail-price {
+    font-size: 20px;
+    font-weight: 800;
+
+    color: var(--green-dark);
+
+    margin-bottom: 16px;
+}
+
+
+/* DETAIL ITEM */
+
+.menu-detail-item {
+    display: flex;
+
+    gap: 9px;
+
+    margin-bottom: 14px;
+}
+
+.menu-detail-icon {
+    width: 28px;
+    height: 28px;
+
+    border-radius: 50%;
+
+    background: var(--green-light);
+    color: var(--green-dark);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    font-size: 11px;
+}
+
+.menu-detail-label {
+    font-size: 9.5px;
+
+    font-weight: 700;
+
+    color: var(--muted);
+
+    text-transform: uppercase;
+
+    margin-bottom: 2px;
+}
+
+.menu-detail-value {
+    font-size: 12.5px;
+
+    font-weight: 600;
+
+    color: #2b2f36;
+}
+
+
+/* STATUS */
+
+.menu-detail-status {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    font-size: 10.5px;
+
+    font-weight: 700;
+
+    padding: 4px 9px;
+
+    border-radius: 20px;
+}
+
+.menu-detail-status.active {
+    background: var(--green-light);
+    color: var(--green-dark);
+}
+
+.menu-detail-status.inactive {
+    background: #f1f1f1;
+    color: #777;
+}
+
+
+/* DESCRIPTION */
+
+.menu-detail-description {
+    margin-top: 18px;
+
+    padding-top: 16px;
+
+    border-top: 1px solid var(--border);
+}
+
+.menu-detail-description-title {
+    font-size: 10px;
+
+    font-weight: 700;
+
+    color: var(--muted);
+
+    text-transform: uppercase;
+
+    margin-bottom: 6px;
+}
+
+.menu-detail-description-text {
+    font-size: 11.5px;
+
+    color: #5b6472;
+
+    line-height: 1.5;
+}
+
+
+/* EDIT BUTTON */
+
+.menu-detail-edit {
+    width: 100%;
+
+    border: 1.5px solid var(--green);
+
+    background: #fff;
+
+    color: var(--green-dark);
+
+    font-weight: 700;
+
+    font-size: 12px;
+
+    padding: 10px;
+
+    border-radius: 8px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 7px;
+
+    text-decoration: none;
+
+    margin-top: 18px;
+}
+
+.menu-detail-edit:hover {
+    background: var(--green-light);
+
+    color: var(--green-dark);
+}
+
+
+/* MOBILE */
+
+@media (max-width: 991.98px) {
+
+    .menu-details-panel {
+        position: static;
+    }
+
+}
+/* Fix oversized pagination icons */
+.pagination svg {
+    width: 16px !important;
+    height: 16px !important;
+    max-width: 16px !important;
+    max-height: 16px !important;
+}
+
+.pagination .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    padding: 6px 12px;
+}
+
+.pagination {
+    align-items: center;
+}/* Fix Laravel pagination SVG arrows */
+.table-card .pagination svg,
+.table-card nav[role="navigation"] svg {
+    width: 16px !important;
+    height: 16px !important;
+    max-width: 16px !important;
+    max-height: 16px !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+}
+
+/* Keep pagination controls at normal size */
+.table-card .pagination a,
+.table-card .pagination span {
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.table-card .pagination a svg,
+.table-card .pagination span svg {
+    flex-shrink: 0;
+}
+
+
+/* ===== CUSTOM MENU PAGINATION ===== */
+
+.table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-top: 1px solid #edf0ed;
+    color: #829087;
+    font-size: 11px;
+    background: #fff;
+}
+
+.custom-pagination {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.custom-pagination .page-btn {
+    width: 31px;
+    height: 31px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid #e7ebe7;
+    border-radius: 8px;
+    background: #fff;
+    color: #344054;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.custom-pagination .page-btn:hover:not(.disabled):not(.active) {
+    background: #f3f7f3;
+    border-color: #cbd9cd;
+}
+
+.custom-pagination .page-btn.active {
+    background: #2f7d3c;
+    border-color: #2f7d3c;
+    color: #fff;
+}
+
+.custom-pagination .page-btn.disabled {
+    color: #b8c0bb;
+    background: #fff;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.custom-pagination .page-btn i {
+    font-size: 11px;
+}
+
+@media (max-width: 576px) {
+    .table-footer {
+        flex-wrap: wrap;
+    }
+
+    .custom-pagination {
+        margin-left: auto;
+    }
+}
+/* ---------- Topbar ---------- */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+  margin-bottom:14px;
+  position:sticky;
+  top:0;
+  z-index:30; /* keeps the profile dropdown above the page content */
+  background:var(--bg-soft);
+  padding:12px 0;
+}
+
+
+.icon-btn{
+  width:38px; height:38px; border-radius:50%;
+  background:#fff; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 0 1px #eee; color:#2b2f36; position:relative;
+  border:none; cursor:pointer; font-size:17px;
+}
+.icon-btn:hover{ background:#f4f4f4; }
+
+.admin-avatar{ width:38px; height:38px; border-radius:50%; object-fit:cover; flex:none; }
+.admin-chip{
+  display:flex; align-items:center; gap:8px;
+  padding:4px 8px; border:0; border-radius:12px;
+  background:none; color:inherit; font-family:inherit; cursor:pointer;
+}
+.admin-chip:hover{ background:#fff; }
+.admin-caret{ font-size:11px; color:var(--muted); transition:transform .15s; }
+.admin-chip[aria-expanded="true"] .admin-caret{ transform:rotate(180deg); }
+
+/* ---------- Profile dropdown ---------- */
+.profile-menu{
+  --bs-dropdown-link-active-bg: var(--green-light);
+  --bs-dropdown-link-active-color: var(--green-dark);
+  --bs-dropdown-link-hover-bg: var(--green-light);
+  --bs-dropdown-link-hover-color: var(--green-dark);
+
+  min-width:190px;
+  margin-top:6px;
+  padding:6px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.08);
+  font-size:13.5px;
+}
+.profile-menu .dropdown-item{
+  display:flex; align-items:center; gap:10px;
+  padding:8px 10px; border-radius:8px;
+}
+.profile-menu .dropdown-item.text-danger{ color:var(--red) !important; }
+.profile-menu .dropdown-item.text-danger:hover,
+.profile-menu .dropdown-item.text-danger:focus,
+.profile-menu .dropdown-item.text-danger:active{
+  background:#fbeaea;
+  color:var(--maroon) !important;
+}
+
+.topbar button:focus-visible,
+.topbar a:focus-visible{
+  outline:2px solid var(--green);
+  outline-offset:2px;
+}

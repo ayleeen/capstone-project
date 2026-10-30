@@ -30,14 +30,25 @@
 
                 <div class="brand-box">
 
-                    <div class="brand-logo">
-                        <img src="{{ asset('image/lolaysLogo.jpg') }}" alt="Lolay's Catering Logo">
-                    </div>
+          <div class="brand-logo">
+                  <a href="{{ route('admin.logo') }}">
+    <img src="{{ $businessProfile->logo_url }}" alt="Business Logo">
+</a>
+                  
+          </div>
+            @php
+    $businessName = trim(
+        $businessProfile->business_name ?? "Lolay's Catering Services"
+    );
 
-                    <div class="brand-name">
-                        Lolay's Catering<br>
-                        Services
-                    </div>
+    $words = preg_split('/\s+/', $businessName);
+    $firstLine = implode(' ', array_slice($words, 0, 2));
+    $secondLine = implode(' ', array_slice($words, 2));
+@endphp
+
+<div class="brand-name">
+    {{ $firstLine }}@if($secondLine !== '')<br>{{ $secondLine }}@endif
+</div>
 
                 </div>
 
@@ -73,17 +84,12 @@
                         Customer
                     </a>
 
-                    <a href="#" class="nav-link-custom">
-                        <i class="bi bi-bar-chart"></i>
-                        Reports
-                    </a>
+                    <a href="{{ route('admin.archive') }}" class="nav-link-custom "><i class="bi bi-archive"></i> Archive</a>
+                    <a href="{{ route('admin.audit') }}" class="nav-link-custom "><i class="bi bi-clipboard-check"></i> Audit Logs</a>
 
-                    <a href="#" class="nav-link-custom">
-                        <i class="bi bi-star"></i>
-                        Reviews
-                    </a>
+              <a href="{{ route('admin.reports') }}" class="nav-link-custom"><i class="bi bi-bar-chart"></i> Reports</a>
 
-                    <a href="#" class="nav-link-custom">
+                    <a href="{{ route('admin.settings') }}" class="nav-link-custom">
                         <i class="bi bi-gear"></i>
                         Settings
                     </a>
@@ -130,7 +136,15 @@
 
         <!-- MAIN CONTENT -->
         <div class="col-lg-10">
-
+    @if ($errors->any())
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+      @endforeach
+    </ul>
+  </div>
+@endif
             <!-- TOPBAR -->
             <div class="topbar">
 
@@ -138,31 +152,76 @@
                     Reservation
                 </h1>
 
-                <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center gap-3">
+@auth
+  @php
+    $unreadCount = auth()->user()->unreadNotifications()->count();
+    $recentNotifications = auth()->user()->notifications()->latest()->take(5)->get();
+  @endphp
 
-                    <button class="icon-btn" type="button">
-                        <i class="bi bi-bell"></i>
-                    </button>
+  <div class="dropdown">
+    <button class="icon-btn position-relative border-0 bg-transparent"
+            type="button"
+            data-bs-toggle="dropdown"
+            data-bs-auto-close="outside"
+            aria-expanded="false"
+            aria-label="Notifications">
+      <i class="bi bi-bell"></i>
+      @if($unreadCount > 0)
+        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">
+          {{ $unreadCount > 99 ? '99+' : $unreadCount }}
+        </span>
+      @endif
+    </button>
 
-                    <div class="d-flex align-items-center gap-2 admin-chip">
+    <div class="dropdown-menu dropdown-menu-end p-0 shadow" style="width: 320px;">
+      <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+        <strong>Notifications</strong>
+        @if($unreadCount > 0)
+          <form method="POST" action="{{ route('notifications.readAll') }}">
+            @csrf
+            <button class="btn btn-link btn-sm p-0 text-decoration-none">Mark all as read</button>
+          </form>
+        @endif
+      </div>
 
-                        <img src="https://i.pravatar.cc/100?img=12"
-                             class="admin-avatar"
-                             alt="Admin">
-
-                        <div>
-                            <div style="font-weight:600;font-size:13px;">
-                                Admin User
-                            </div>
-
-                            <div style="font-size:10.5px;color:var(--muted);">
-                                Administrator
-                            </div>
-                        </div>
-
-                        <i class="bi bi-chevron-down admin-caret"></i>
-
-                    </div>
+      <div style="max-height: 320px; overflow-y: auto;">
+        @forelse($recentNotifications as $notif)
+          <div class="px-3 py-2 border-bottom {{ $notif->read_at ? '' : 'bg-light' }}">
+            <div class="fw-semibold small">{{ $notif->data['title'] ?? 'Notification' }}</div>
+            <div class="small text-muted">{{ $notif->data['message'] ?? '' }}</div>
+            <div class="text-secondary" style="font-size: 12px;">{{ $notif->created_at->diffForHumans() }}</div>
+          </div>
+        @empty
+          <p class="text-center text-muted py-4 mb-0 small">Wala pang notifications.</p>
+        @endforelse
+      </div>
+    </div>
+  </div>
+@endauth
+          <div class="dropdown">
+            <button class="admin-chip" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <img src="https://i.pravatar.cc/100?img=12" class="admin-avatar" alt="">
+              <span class="text-start">
+                <span class="d-block" style="font-weight:600;font-size:13px;">Admin User</span>
+                <span class="d-block" style="font-size:10.5px;color:var(--muted);">Administrator</span>
+              </span>
+              <i class="bi bi-chevron-down admin-caret"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end profile-menu">
+              <li><a class="dropdown-item" href="profile.html"><i class="bi bi-person"></i> My Profile</a></li>
+              <li><a class="dropdown-item" href="{{ route('admin.settings') }}"><i class="bi bi-gear"></i> Settings</a></li>
+              <li><hr class="dropdown-divider"></li>
+                            <li>
+  <form method="POST" action="{{ route('logout') }}">
+    @csrf
+    <button type="submit" class="dropdown-item text-danger">
+      <i class="bi bi-box-arrow-right"></i> Logout
+    </button>
+  </form>
+</li>
+            </ul>
+          </div>
 
                 </div>
 
@@ -437,13 +496,13 @@
 
 
                         <button type="button"
-                                class="btn btn-new-reservation"
-                                id="newReservationBtn">
-
-                            <i class="fa-solid fa-plus"></i>
-                            New Reservation
-
-                        </button>
+        class="btn btn-new-reservation"
+        id="newReservationBtn"
+        data-bs-toggle="modal"
+        data-bs-target="#newReservationModal">
+    <i class="fa-solid fa-plus"></i>
+    New Reservation
+</button>
 
 
                         <button type="button"
@@ -650,470 +709,97 @@
             
 
 
-                <!-- DETAILS PANEL -->
-                <div class="card details-panel"
-                     id="detailsPanel">
+              
+<!-- DETAILS PANEL -->
+<!-- <div class="card details-panel" id="detailsPanel">
 
-                    <div class="details-panel-header">
+    <div class="details-panel-header">
+        <h3 id="detailsPanelTitle">
+            Reservation Details
+        </h3>
 
-                        <h3 id="detailsPanelTitle">
-                            Reservation Details
-                        </h3>
-
-                        <button class="details-close-btn"
-                                id="closeDetailsPanel"
-                                type="button">
-
-                            <i class="fa-solid fa-xmark"></i>
-
-                        </button>
-
-                    </div>
-
-
-                    <div class="details-panel-body"
-                         id="detailsPanelBody">
-
-                        <!-- Populated by JavaScript -->
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
+        <button class="details-close-btn" id="closeDetailsPanel" type="button">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
     </div>
 
-</div>
+    <div class="details-panel-body" id="detailsPanelBody">
+    </div>
+</div> -->
+
+
+                    
 
 
 <!-- NEW RESERVATION MODAL -->
-<div class="modal fade"
-     id="newReservationModal"
-     tabindex="-1"
-     aria-hidden="true">
-
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-
-        <div class="modal-content reservation-modal">
-
-            <div class="modal-header">
-
-                <div>
-
-                    <h5 class="modal-title">
-                        New Reservation
-                    </h5>
-
-                    <p class="modal-subtitle">
-                        Fill in the details below to add a new reservation.
-                    </p>
-
-                </div>
-
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Close">
-                </button>
-
-            </div>
-
-
-            <!-- FORM -->
-            <form id="newReservationForm"
-                  method="POST"
-                  action="{{ route('admin.reservation.store') }}">
-
-                @csrf
-
-                <div class="modal-body">
-
-
-                    <!-- CLIENT INFORMATION -->
-                    <div class="modal-section-title">
-                        Client Information
-                    </div>
-
-
-                    <div class="row g-3 mb-3">
-
-                        <div class="col-md-6">
-
-                            <label class="modal-field-label">
-                                Full Name
-                            </label>
-
-                            <input type="text"
-                                   class="form-control"
-                                   id="rFullName"
-                                   name="full_name"
-                                   required>
-
-                        </div>
-
-
-                        <div class="col-md-6">
-
-                            <label class="modal-field-label">
-                                Email Address
-                            </label>
-
-                            <input type="email"
-                                   class="form-control"
-                                   id="rEmail"
-                                   name="email"
-                                   required>
-
-                        </div>
-
-
-                        <div class="col-md-6">
-
-                            <label class="modal-field-label">
-                                Phone Number
-                            </label>
-
-                            <input type="tel"
-                                   class="form-control"
-                                   id="rPhone"
-                                   name="phone"
-                                   required>
-
-                        </div>
-
-
-                        <div class="col-md-6">
-
-                            <label class="modal-field-label">
-                                Event Type
-                            </label>
-
-                            <select class="form-select"
-                                    id="rEventType"
-                                    name="event_type"
-                                    required>
-
-                                <option value=""
-                                        selected
-                                        disabled>
-
-                                    Select event type
-
-                                </option>
-
-                                <option value="wedding">
-                                    Wedding
-                                </option>
-
-                                <option value="birthday">
-                                    Birthday
-                                </option>
-
-                                <option value="corporate">
-                                    Corporate Event
-                                </option>
-
-                                <option value="debut">
-                                    Debut
-                                </option>
-
-                                <option value="christening">
-                                    Christening
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- EVENT DETAILS -->
-                    <div class="modal-section-title">
-                        Event Details
-                    </div>
-
-
-                    <div class="row g-3 mb-3">
-
-
-                        <div class="col-md-6">
-
-                            <label class="modal-field-label">
-                                Event Title
-                            </label>
-
-                            <input type="text"
-                                   class="form-control"
-                                   id="rEventTitle"
-                                   name="event_title"
-                                   required>
-
-                        </div>
-
-
-                        <div class="col-md-6">
-
-                            <label class="modal-field-label">
-                                Location / Venue
-                            </label>
-
-                            <input type="text"
-                                   class="form-control"
-                                   id="rLocation"
-                                   name="location">
-
-                        </div>
-
-
-                        <div class="col-md-6">
-
-                            <label class="modal-field-label">
-                                Start Date &amp; Time
-                            </label>
-
-                            <div class="d-flex gap-2">
-
-                                <input type="date"
-                                       class="form-control"
-                                       id="rStartDate"
-                                       name="start_date"
-                                       required>
-
-                                <input type="time"
-                                       class="form-control"
-                                       id="rStartTime"
-                                       name="start_time">
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="col-md-6">
-
-                            <label class="modal-field-label">
-                                End Date &amp; Time
-                            </label>
-
-                            <div class="d-flex gap-2">
-
-                                <input type="date"
-                                       class="form-control"
-                                       id="rEndDate"
-                                       name="end_date">
-
-                                <input type="time"
-                                       class="form-control"
-                                       id="rEndTime"
-                                       name="end_time">
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="col-md-6">
-
-                            <label class="modal-field-label">
-                                Number of Guests
-                            </label>
-
-                            <input type="number"
-                                   class="form-control"
-                                   id="rGuests"
-                                   name="guests"
-                                   min="1"
-                                   required>
-
-                        </div>
-
-
-                        <div class="col-md-6">
-
-                            <label class="modal-field-label">
-                                Status
-                            </label>
-
-                            <select class="form-select"
-                                    id="rStatus"
-                                    name="status"
-                                    required>
-
-                                <option value="pending" selected>
-                                    Pending
-                                </option>
-
-                                <option value="confirmed">
-                                    Confirmed
-                                </option>
-
-                                <option value="cancelled">
-                                    Cancelled
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- NOTES -->
-                    <div class="mb-3">
-
-                        <label class="modal-field-label">
-                            Special Request / Notes
-                        </label>
-
-                        <textarea class="form-control"
-                                  id="rNotes"
-                                  name="notes"
-                                  rows="3"></textarea>
-
-                    </div>
-
-
-                    <!-- ADDITIONAL OPTIONS -->
-                    <div class="modal-section-title">
-                        Additional Options
-                    </div>
-
-
-                    <div class="row g-3">
-
-
-                        <div class="col-md-4">
-
-                            <label class="modal-field-label">
-                                Package (Optional)
-                            </label>
-
-                            <select class="form-select"
-                                    id="rPackage"
-                                    name="package">
-
-                                <option value=""
-                                        selected>
-
-                                    None
-
-                                </option>
-
-                                <option value="Wedding Gold">
-                                    Wedding Gold
-                                </option>
-
-                                <option value="Wedding Silver">
-                                    Wedding Silver
-                                </option>
-
-                                <option value="Birthday Package">
-                                    Birthday Package
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <div class="col-md-4">
-
-                            <label class="modal-field-label">
-                                Assigned Staff (Optional)
-                            </label>
-
-                            <select class="form-select"
-                                    id="rStaff"
-                                    name="staff">
-
-                                <option value=""
-                                        selected>
-
-                                    Unassigned
-
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <div class="col-md-4">
-
-                            <label class="modal-field-label">
-                                Estimated Budget
-                            </label>
-
-                            <select class="form-select"
-                                    id="rBudget"
-                                    name="total_amount">
-
-                                <option value="0"
-                                        selected>
-
-                                    None
-
-                                </option>
-
-                                <option value="10000">
-                                    ₱10,000
-                                </option>
-
-                                <option value="30000">
-                                    ₱30,000
-                                </option>
-
-                                <option value="50000">
-                                    ₱50,000
-                                </option>
-
-                                <option value="100000">
-                                    ₱100,000
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- FOOTER -->
-                <div class="modal-footer">
-
-                    <button type="button"
-                            class="btn btn-cancel-modal"
-                            data-bs-dismiss="modal">
-
-                        Cancel
-
-                    </button>
-
-
-                    <button type="submit"
-                            class="btn btn-new-reservation">
-
-                        <i class="fa-solid fa-floppy-disk"></i>
-                        Create Reservation
-
-                    </button>
-
-                </div>
-
-            </form>
-
+<div class="modal fade" id="newReservationModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content view-modal">
+      <form id="newReservationForm" method="POST" action="{{ route('admin.reservation.store') }}">
+        @csrf
+        <div class="modal-header">
+          <h5 class="modal-title">New Reservation</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-
+        <div class="modal-body">
+          <div class="edit-field-grid">
+            <div class="edit-field"><label>Full Name</label><input type="text" class="form-control" name="full_name" required></div>
+            <div class="edit-field"><label>Email Address</label><input type="email" class="form-control" name="email" required></div>
+            <div class="edit-field"><label>Contact Number</label><input type="tel" class="form-control" name="phone" required></div>
+            <div class="edit-field"><label>Event Type</label>
+              <select class="form-select" name="event_type" required>
+                <option value="wedding">Wedding</option>
+                <option value="birthday">Birthday</option>
+                <option value="corporate">Corporate Event</option>
+                <option value="debut">Debut</option>
+                <option value="christening">Christening</option>
+              </select>
+            </div>
+            <div class="edit-field"><label>Event Title</label><input type="text" class="form-control" name="event_title" required></div>
+            <div class="edit-field"><label>Number of Guests</label><input type="number" min="1" class="form-control" name="guests" required></div>
+            <div class="edit-field"><label>Start Date</label><input type="date" class="form-control" name="start_date" required></div>
+            <div class="edit-field"><label>Start Time</label><input type="time" class="form-control" name="start_time"></div>
+            <div class="edit-field"><label>End Date</label><input type="date" class="form-control" name="end_date"></div>
+            <div class="edit-field"><label>End Time</label><input type="time" class="form-control" name="end_time"></div>
+            <div class="edit-field full"><label>Location / Venue</label><input type="text" class="form-control" name="location"></div>
+            <div class="edit-field"><label>Package</label><input type="text" class="form-control" name="package"></div>
+            <div class="edit-field"><label>Total Amount</label><input type="number" min="0" step="0.01" class="form-control" name="total_amount" value="0"></div>
+            <div class="edit-field"><label>Status</label>
+              <select class="form-select" name="status">
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+              </select>
+            </div>
+            <div class="edit-field"><label>Payment Status</label>
+              <select class="form-select" name="payment_status">
+                <option value="unpaid">Unpaid</option>
+                <option value="partial">Partial</option>
+                <option value="paid">Paid</option>
+              </select>
+            </div>
+            <div class="edit-field full"><label>Notes</label><textarea class="form-control" name="notes" rows="3"></textarea></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel-modal" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-new-reservation"><i class="fa-solid fa-floppy-disk"></i> Save Reservation</button>
+        </div>
+      </form>
     </div>
-
+  </div>
 </div>
-
+<!-- VIEW / EDIT RESERVATION MODAL -->
+<div class="modal fade" id="viewReservationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content view-modal">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailsPanelTitle">Reservation Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="viewModalBody"></div>
+        </div>
+    </div>
+</div>
 
 <!-- DELETE CONFIRMATION MODAL -->
 <div class="modal fade"
@@ -1291,8 +977,6 @@
     @method('PATCH')
 
 </form>
-
-
 <script>
     window.reservationData = @php
         echo json_encode(
@@ -1317,12 +1001,13 @@
                             'package' => $r->package,
                             'total_amount' => $r->total_amount ?? 0,
                             'notes' => $r->notes,
+                            'proof_of_payment' => $r->proof_of_payment ? asset('storage/' . $r->proof_of_payment) : null,
                             'deleteUrl' => route('admin.reservation.destroy', $r->id),
                             'cancelUrl' => route('admin.reservation.cancel', $r->id),
                             'updateUrl' => route('admin.reservation.update', $r->id),
                             'sendConfirmationUrl' => route(
-                            'admin.reservation.sendConfirmation',
-                            $r->id
+                                'admin.reservation.sendConfirmation',
+                                $r->id
                             ),
                         ]
                     ];
@@ -1332,19 +1017,23 @@
     @endphp
 </script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 <script>
-    window.csrfToken = document
-        .querySelector('meta[name="csrf-token"]')
-        .getAttribute('content');
+  window.csrfToken = "{{ csrf_token() }}";
 </script>
-
-<!-- Bootstrap -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Reservation JavaScript -->
 <script src="{{ asset('js/admin-reservation.js') }}"></script>
+<script>
+  window.addEventListener('load', function () {
+    var id = new URLSearchParams(window.location.search).get('view');
+    if (!id) return;
 
+    var btn = document.querySelector('.view-btn[data-id="' + CSS.escape(id) + '"]');
+    if (btn) btn.click();
 
+    // alisin ang ?view= para hindi ulit bumukas kapag nag-refresh
+    history.replaceState(null, '', window.location.pathname);
+  });
+</script>
 
 </body>
 </html>

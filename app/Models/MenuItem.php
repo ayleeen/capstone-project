@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes; 
+use App\Traits\Auditable;
 
 class MenuItem extends Model
 {
+ use SoftDeletes, Auditable;
     protected $fillable = [
         'name',
         'description',

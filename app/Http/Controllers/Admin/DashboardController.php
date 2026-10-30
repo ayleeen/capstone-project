@@ -8,37 +8,50 @@ use App\Models\Reservation;
 class DashboardController extends Controller
 {
     public function index()
-{
-    $month = Reservation::whereMonth('start_date', now()->month)
-                        ->whereYear('start_date', now()->year);
+    {
+        $stats = Reservation::monthlyStats();
 
-    $stats = [
-        'total'     => (clone $month)->count(),
-        'pending'   => (clone $month)->where('status', 'pending')->count(),
-        'confirmed' => (clone $month)->where('status', 'confirmed')->count(),
-        'cancelled' => (clone $month)->where('status', 'cancelled')->count(),
-        'sales'     => (clone $month)->where('status', 'confirmed')->sum('total_amount'),
-        'upcoming'  => Reservation::whereBetween('start_date', [now()->startOfWeek(), now()->endOfWeek()])
-                                  ->where('status', '!=', 'cancelled')->count(),
-    ];
+        $upcomingEvents = Reservation::where('status', '!=', 'cancelled')
+            ->whereBetween('start_date', [now()->startOfDay(), now()->endOfWeek()])
+            ->orderBy('start_date')->orderBy('start_time')
+            ->take(5)->get();
 
-    $totalForStatus = $stats['confirmed'] + $stats['pending'] + $stats['cancelled'];
+        $recentReservations = Reservation::latest()->take(5)->get();
 
-    $statusBreakdown = [
-        'confirmed' => [
-            'count'   => $stats['confirmed'],
-            'percent' => $totalForStatus > 0 ? round($stats['confirmed'] / $totalForStatus * 100) : 0,
-        ],
-        'pending' => [
-            'count'   => $stats['pending'],
-            'percent' => $totalForStatus > 0 ? round($stats['pending'] / $totalForStatus * 100) : 0,
-        ],
-        'cancelled' => [
-            'count'   => $stats['cancelled'],
-            'percent' => $totalForStatus > 0 ? round($stats['cancelled'] / $totalForStatus * 100) : 0,
-        ],
-    ];
+        $active = Reservation::where('status', '!=', 'cancelled')->get();
+        $calendarEvents = $active->groupBy(fn ($r) => $r->start_date->format('Y-m-d'))
+            ->map(fn ($day, $date) => [
+                'date'   => $date,
+                'status' => $day->count() > 1 ? 'conflict' : $day->first()->status,
+                'titles' => $day->pluck('event_title')->values(),
+            ])->values();
 
-    return view('admin.dashboard', compact('stats', 'statusBreakdown'));
-}
+        $statusBreakdown = [];
+        foreach (['confirmed', 'pending', 'cancelled'] as $s) {
+            $statusBreakdown[$s] = [
+                'count'   => $stats[$s],
+                'percent' => $stats['total'] ? round($stats[$s] / $stats['total'] * 100) : 0,
+            ];
+        }
+
+        $notifications = auth()->user()->notifications()->latest()->take(5)->get();
+
+        $bestPackages = Reservation::selectRaw('package, COUNT(*) as total')
+            ->whereNotNull('package')
+            ->where('package', '!=', '')
+            ->where('status', '!=', 'cancelled')
+            ->groupBy('package')
+            ->orderByDesc('total')
+            ->take(3)->get();
+
+        return view('admin.dashboard', compact(
+            'stats',
+            'statusBreakdown',
+            'upcomingEvents',
+            'recentReservations',
+            'calendarEvents',
+            'notifications',
+            'bestPackages'
+        ));
+    }
 }

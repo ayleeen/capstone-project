@@ -1,150 +1,196 @@
-const menuRowsBody = document.getElementById('menuRows');
-  const addMenuItemBtn = document.getElementById('addMenuItemBtn');
- 
-  const menuCategories = ["Appetizer", "Main Dish", "Rice", "Drinks", "Dessert", "Add-on"];
- 
-  function buildCategoryOptions(){
-    return `<option value="" selected disabled>Select category</option>` +
-      menuCategories.map(c => `<option>${c}</option>`).join('');
-  }
- 
-  function addMenuRow(){
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td class="menu-row-item"><input type="text" class="form-control menu-item-input" placeholder="e.g. Chicken Adobo"></td>
-      <td class="menu-row-item"><select class="form-select menu-category-input">${buildCategoryOptions()}</select></td>
-      <td class="text-center">
-        <button type="button" class="btn btn-delete-row remove-row"><i class="fa-solid fa-trash"></i></button>
-      </td>
-    `;
-    menuRowsBody.appendChild(row);
-  }
- 
-  // start with 4 empty rows, matching the layout
-  for(let i=0;i<4;i++){ addMenuRow(); }
- 
-  addMenuItemBtn.addEventListener('click', function(){
-    addMenuRow();
-    updatePreview();
-  });
- 
-  // delete row (event delegation, keeps at least one row)
-  menuRowsBody.addEventListener('click', function(e){
-    const btn = e.target.closest('.remove-row');
-    if(!btn) return;
-    if(menuRowsBody.querySelectorAll('tr').length > 1){
-      btn.closest('tr').remove();
-    } else {
-      btn.closest('tr').querySelectorAll('input, select').forEach(el => el.value = '');
+
+document.addEventListener('DOMContentLoaded', function () {
+    const menuRowsBody = document.getElementById('menuRows');
+    const addMenuItemBtn = document.getElementById('addMenuItemBtn');
+
+    const pkgName = document.getElementById('pkgName');
+    const pkgPrice = document.getElementById('pkgPrice');
+    const pkgCategory = document.getElementById('pkgCategory');
+    const pkgGuestMin = document.getElementById('pkgGuestMin');
+    const pkgGuestMax = document.getElementById('pkgGuestMax');
+    const pkgDescription = document.getElementById('pkgDescription');
+
+    const previewName = document.getElementById('previewName');
+    const previewPrice = document.getElementById('previewPrice');
+    const previewMeta = document.getElementById('previewMeta');
+    const previewDesc = document.getElementById('previewDesc');
+    const inclusionsList = document.getElementById('inclusionsList');
+
+    const statusSwitch = document.getElementById('statusSwitch');
+    const statusText = document.getElementById('statusText');
+
+    const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
+    const photoInput = document.getElementById('photoInput');
+    const photoPreview = document.getElementById('photoPreview');
+    const photoPlaceholder = document.getElementById('photoPlaceholder');
+
+    const oldInclusions = window.OLD_INCLUSIONS || [];
+
+    // Create a manual inclusion input row.
+    function addInclusionRow(value = '') {
+        const row = document.createElement('tr');
+
+        const itemCell = document.createElement('td');
+        itemCell.style.width = '85%';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = 'inclusions[]';
+        input.className = 'form-control inclusion-input';
+        input.placeholder = 'e.g. Roasted Beef, Carbonara, Iced Tea';
+        input.maxLength = 255;
+        input.value = value;
+
+        itemCell.appendChild(input);
+
+        const actionCell = document.createElement('td');
+        actionCell.className = 'text-center';
+        actionCell.style.width = '15%';
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn btn-delete-row remove-row';
+        removeBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+        removeBtn.setAttribute('aria-label', 'Remove inclusion');
+
+        actionCell.appendChild(removeBtn);
+        row.append(itemCell, actionCell);
+        menuRowsBody.appendChild(row);
     }
-    updatePreview();
-  });
- 
-  // live update inclusions whenever a menu item name or category changes
-  menuRowsBody.addEventListener('input', updatePreview);
-  menuRowsBody.addEventListener('change', updatePreview);
- 
-  // status switch text
-  const statusSwitch = document.getElementById('statusSwitch');
-  const statusText = document.getElementById('statusText');
-  statusSwitch.addEventListener('change', function(){
-    statusText.textContent = this.checked ? 'Active' : 'Inactive';
-    statusText.style.color = this.checked ? '#1f7a34' : '#8a8f98';
-  });
- 
-  // photo upload preview
-  const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
-  const photoInput = document.getElementById('photoInput');
-  const photoPreview = document.getElementById('photoPreview');
-  const photoPlaceholder = document.getElementById('photoPlaceholder');
-  uploadPhotoBtn.addEventListener('click', () => photoInput.click());
-  photoInput.addEventListener('change', function(){
-    const file = this.files[0];
-    if(file){
-      const reader = new FileReader();
-      reader.onload = function(e){
-        photoPreview.src = e.target.result;
-        photoPreview.classList.remove('d-none');
-        photoPlaceholder.classList.add('d-none');
-      };
-      reader.readAsDataURL(file);
+
+    function getInclusions() {
+        return [...menuRowsBody.querySelectorAll('.inclusion-input')]
+            .map(input => input.value.trim())
+            .filter(value => value !== '');
     }
-  });
- 
-  // ----- Live preview logic -----
-  const pkgName = document.getElementById('pkgName');
-  const pkgPrice = document.getElementById('pkgPrice');
-  const pkgCategory = document.getElementById('pkgCategory');
-  const pkgGuestMin = document.getElementById('pkgGuestMin');
-  const pkgGuestMax = document.getElementById('pkgGuestMax');
-  const pkgDescription = document.getElementById('pkgDescription');
- 
-  const previewName = document.getElementById('previewName');
-  const previewPrice = document.getElementById('previewPrice');
-  const previewMeta = document.getElementById('previewMeta');
-  const previewDesc = document.getElementById('previewDesc');
-  const inclusionsList = document.getElementById('inclusionsList');
- 
-  function updatePreview(){
-    // Package name
-    previewName.textContent = pkgName.value.trim() || 'Your package name';
- 
-    // Price
-    const priceVal = parseFloat(pkgPrice.value);
-    previewPrice.textContent = isNaN(priceVal) ? '₱0' : '₱' + priceVal.toLocaleString();
- 
-    // Category + guest range meta line
-    const metaParts = [];
-    if(pkgCategory.value) metaParts.push(pkgCategory.value);
-    if(pkgGuestMin.value || pkgGuestMax.value){
-      const min = pkgGuestMin.value || '?';
-      const max = pkgGuestMax.value || '?';
-      metaParts.push(`${min}–${max} Guests`);
+
+    function updatePreview() {
+        previewName.textContent =
+            pkgName.value.trim() || 'Your package name';
+
+        const price = parseFloat(pkgPrice.value);
+        previewPrice.textContent = Number.isNaN(price)
+            ? '₱0'
+            : '₱' + price.toLocaleString('en-PH');
+
+        const meta = [];
+
+        if (pkgCategory.value) {
+            meta.push(pkgCategory.value);
+        }
+
+        if (pkgGuestMin.value || pkgGuestMax.value) {
+            meta.push(
+                `${pkgGuestMin.value || '?'}–${pkgGuestMax.value || '?'} Guests`
+            );
+        }
+
+        previewMeta.textContent = meta.join(' • ');
+
+        previewDesc.textContent =
+            pkgDescription.value.trim() ||
+            'Your package description will appear here.';
+
+        inclusionsList.innerHTML = '';
+
+        const inclusions = getInclusions();
+
+        if (inclusions.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'inclusion-empty';
+            empty.textContent = 'No inclusions added yet.';
+            inclusionsList.appendChild(empty);
+            return;
+        }
+
+        inclusions.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'inclusion-item';
+
+            const icon = document.createElement('i');
+            icon.className = 'fa-solid fa-circle-check';
+
+            div.append(icon, document.createTextNode(' ' + item));
+            inclusionsList.appendChild(div);
+        });
     }
-    previewMeta.textContent = metaParts.join(' • ');
- 
-    // Description
-    previewDesc.textContent = pkgDescription.value.trim() || 'Your package description will appear here.';
- 
-    // Inclusions from menu rows
-    const rows = menuRowsBody.querySelectorAll('tr');
-    const items = [];
-    rows.forEach(row => {
-      const nameVal = row.querySelector('.menu-item-input').value.trim();
-      const catVal = row.querySelector('.menu-category-input').value;
-      if(nameVal){
-        items.push(catVal ? `${nameVal} (${catVal})` : nameVal);
-      }
+
+    function updateStatusText() {
+        if (!statusSwitch || !statusText) return;
+
+        statusText.textContent =
+            statusSwitch.checked ? 'Active' : 'Inactive';
+
+        statusText.style.color =
+            statusSwitch.checked ? '#1f7a34' : '#8a8f98';
+    }
+
+    function refresh() {
+        updatePreview();
+    }
+
+    addMenuItemBtn.addEventListener('click', function () {
+        addInclusionRow();
+        refresh();
     });
- 
-    if(items.length === 0){
-      inclusionsList.innerHTML = `<div class="inclusion-empty" id="inclusionsEmpty">No menu items added yet.</div>`;
+
+    menuRowsBody.addEventListener('input', function (event) {
+        if (event.target.classList.contains('inclusion-input')) {
+            refresh();
+        }
+    });
+
+    menuRowsBody.addEventListener('click', function (event) {
+        const button = event.target.closest('.remove-row');
+        if (!button) return;
+
+        button.closest('tr').remove();
+
+        if (menuRowsBody.querySelectorAll('tr').length === 0) {
+            addInclusionRow();
+        }
+
+        refresh();
+    });
+
+    [pkgName, pkgPrice, pkgCategory, pkgGuestMin, pkgGuestMax, pkgDescription]
+        .forEach(element => {
+            if (!element) return;
+            element.addEventListener('input', updatePreview);
+            element.addEventListener('change', updatePreview);
+        });
+
+    if (statusSwitch) {
+        statusSwitch.addEventListener('change', updateStatusText);
+        updateStatusText();
+    }
+
+    if (uploadPhotoBtn && photoInput) {
+        uploadPhotoBtn.addEventListener('click', () => photoInput.click());
+    }
+
+    if (photoInput && photoPreview && photoPlaceholder) {
+        photoInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+
+            reader.onload = function (event) {
+                photoPreview.src = event.target.result;
+                photoPreview.classList.remove('d-none');
+                photoPlaceholder.classList.add('d-none');
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }
+
+    if (oldInclusions.length > 0) {
+        oldInclusions.forEach(item => addInclusionRow(item));
     } else {
-      inclusionsList.innerHTML = items.map(txt =>
-        `<div class="inclusion-item"><i class="fa-solid fa-circle-check"></i> ${txt}</div>`
-      ).join('');
+        addInclusionRow();
     }
-  }
- 
-  [pkgName, pkgPrice, pkgCategory, pkgGuestMin, pkgGuestMax, pkgDescription].forEach(el => {
-    el.addEventListener('input', updatePreview);
-    el.addEventListener('change', updatePreview);
-  });
- 
-  // initialize preview in its empty state
-  updatePreview();
- 
-  // delete package confirm
-  document.getElementById('deletePackageBtn').addEventListener('click', function(){
-    if(confirm('Are you sure you want to delete this package?')){
-      alert('Package deleted (demo only).');
-    }
-  });
- 
-  // form submit
 
-// form submit
-document.getElementById('packageForm').addEventListener('submit', function(e){
-    // Allow Laravel to handle the form submission
+    refresh();
 });
-

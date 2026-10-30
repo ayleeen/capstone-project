@@ -7,13 +7,44 @@ use App\Http\Controllers\Admin\ReservationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\Admin\DashboardController;
-
+use App\Http\Controllers\Admin\CalendarController;
 use App\Http\Controllers\Admin\MenuItemController;
+use App\Http\Controllers\Admin\ReservationController as AdminReservationController;
+use App\Http\Controllers\Client\ReservationController as ClientReservationController;
+use App\Http\Controllers\Admin\ArchiveController;
+use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Models\Package;
+use App\Http\Controllers\Admin\BusinessProfileController;
+use App\Http\Controllers\Auth\PhoneLoginController;
+use App\Http\Controllers\Client\MenuController;
+// use App\Http\Controllers\Auth\LoginOtpController;
+
+//another way to login
+Route::post('/login/phone/send', [PhoneLoginController::class, 'sendCode'])
+    ->middleware(['guest', 'throttle:10,1'])
+    ->name('login.phone.send');
+
+Route::post('/login/phone/verify', [PhoneLoginController::class, 'verifyCode'])
+    ->middleware(['guest', 'throttle:10,1'])
+    ->name('login.phone.verify');
 
 
+//notif
+Route::post('/notifications/read-all', function () {
+    auth()->user()->unreadNotifications->markAsRead();
+    return back();
+})->middleware('auth')->name('notifications.readAll');
 // ======================================================
 // EMAIL
 // ======================================================
+
+//menu controller customize
+
+// Route::get('/reservation/customize-menu', [MenuController::class, 'customize'])
+//     ->name('client.customize-menu');
+
 
 Route::get('/test-email', function () {
     Mail::raw(
@@ -28,10 +59,35 @@ Route::get('/test-email', function () {
     return 'Test email sent!';
 });
 
+//profile user
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::delete('/profile/photo', [ProfileController::class, 'removePhoto'])->name('profile.photo.remove');
+});
+
+
+// ======================================================
+// LOGIN VIA EMAIL OTP
+// ======================================================
+
+// Route::middleware('guest')->group(function () {
+//     Route::get('/login/otp', [LoginOtpController::class, 'showRequest'])->name('login.otp');
+//     Route::post('/login/otp', [LoginOtpController::class, 'sendCode'])->name('login.otp.send');
+
+//     Route::get('/login/otp/verify', [LoginOtpController::class, 'showVerify'])->name('login.otp.verify');
+//     Route::post('/login/otp/verify', [LoginOtpController::class, 'verify'])->name('login.otp.check');
+//     Route::post('/login/otp/resend', [LoginOtpController::class, 'resend'])->name('login.otp.resend');
+// });
+
 Route::post(
     '/admin/reservation/{reservation}/send-confirmation',
     [ReservationController::class, 'sendConfirmation']
 )->name('admin.reservation.sendConfirmation');
+
+Route::get('/admin/calendar', [CalendarController::class, 'index'])
+    ->middleware(['auth'])->name('admin.calendar');
 
 
 // ======================================================
@@ -39,7 +95,13 @@ Route::post(
 // ======================================================
 
 Route::get('/homepage', function () {
-    return view('homepage');
+    $packages = Package::where('status', true)
+        ->orderBy('category')
+        ->orderBy('price')
+        ->take(6)
+        ->get();
+
+    return view('homepage', compact('packages'));
 })->name('home');
 
 Route::get('/about-us', function () {
@@ -54,6 +116,26 @@ Route::get('/adds-on-package', function () {
     return view('adds-on-package');
 })->name('add-ons');
 
+Route::get('/menu', function () {
+    return view('menu');
+})->name('menu');
+
+Route::get('/gallery', function () {
+    return view('gallery');
+})->name('gallery');
+
+Route::get('/contact', function () {
+    return view('contact');
+})->name('contact');
+//logo
+//   Route::get('/logo', function () {
+//       return view('admin.logo');
+//   })->name('admin.logo');
+
+
+
+Route::get('/logo', [BusinessProfileController::class, 'edit'])->name('admin.logo');
+Route::post('/logo', [BusinessProfileController::class, 'update'])->name('admin.logo.update');
 
 // ======================================================
 // ADMIN DASHBOARD
@@ -63,6 +145,9 @@ Route::get('/adds-on-package', function () {
 Route::get('/admin/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth'])
     ->name('admin.dashboard');
+
+
+//business profile
 
 
 // ======================================================
@@ -107,10 +192,46 @@ Route::middleware(['auth'])->group(function () {
 // ADMIN CALENDAR
 // ======================================================
 
-Route::get('/admin/calendar', function () {
-    return view('admin.calendar');
-})->middleware(['auth'])->name('admin.calendar');
+Route::get('/admin/calendar', [CalendarController::class, 'index'])
+    ->middleware(['auth'])->name('admin.calendar');
 
+Route::get('/admin/reports', function () {
+    return view('admin.reports');
+})->middleware(['auth'])->name('admin.reports');
+
+Route::get('/admin/notifications', function () {
+    return view('admin.notifications');
+})->middleware(['auth'])->name('admin.notifications');
+
+Route::get('/admin/profile', function () {
+    return view('admin.profile');
+})->middleware(['auth'])->name('admin.profile');
+
+Route::get('/admin/payment', function () {
+    return view('admin.payment');
+})->middleware(['auth'])->name('admin.payment');
+
+Route::get('/admin/security', function () {
+    return view('admin.security');
+})->middleware(['auth'])->name('admin.security');
+
+
+
+Route::get('/admin/audit', [\App\Http\Controllers\Admin\AuditController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('admin.audit');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/archive', [ArchiveController::class, 'index'])->name('admin.archive');
+    Route::post('/admin/archive/{tab}/restore', [ArchiveController::class, 'restore'])->name('admin.archive.restore');
+    Route::post('/admin/archive/{tab}/delete', [ArchiveController::class, 'destroy'])->name('admin.archive.delete');
+});
+
+//reports
+
+
+Route::get('/admin/reports', [ReportController::class, 'index'])->name('admin.reports');
+Route::get('/admin/reports/data', [ReportController::class, 'data'])->name('admin.reports.data');
 
 // ======================================================
 // ADMIN PACKAGES
@@ -131,6 +252,12 @@ Route::middleware('auth')->group(function () {
 
 });
 
+//settings
+
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+    Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+});
 
 // ======================================================
 // ADMIN MENU
@@ -145,17 +272,16 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/admin/menu/{menuItem}', [MenuItemController::class, 'destroy'])->name('admin.menu.destroy');
 });
 
-Route::get('/admin/menu/add', function () {
-    return view('admin.add-menu');
-})->middleware(['auth'])->name('admin.menu.add');
+
 
 // ======================================================
 // ADMIN CUSTOMER
 // ======================================================
 
-Route::get('/admin/customer', function () {
-    return view('admin.customer');
-})->middleware(['auth'])->name('admin.customer');
+Route::get('/admin/customer', [CustomerController::class, 'index'])->middleware(['auth'])->name('admin.customer');
+Route::post('/admin/customers', [CustomerController::class, 'store'])->middleware(['auth'])->name('admin.customers.store');
+Route::put('/admin/customers/{customer}', [CustomerController::class, 'update'])->middleware(['auth'])->name('admin.customers.update');
+Route::delete('/admin/customers/{customer}', [CustomerController::class, 'destroy'])->middleware(['auth'])->name('admin.customers.destroy');
 
 
 // ======================================================
@@ -225,6 +351,53 @@ Route::middleware('auth')->group(function () {
 
 });
 
+//customer
+//customer
+
+Route::middleware('auth')->group(function () {
+
+    Route::get('/reservation-process-1', [ClientReservationController::class, 'process1'])
+        ->name('reservation.process1');
+    Route::post('/reservation-process-1', [ClientReservationController::class, 'storeProcess1'])
+        ->name('reservation.process1.store');
+
+    Route::get('/reservation-process-2', [ClientReservationController::class, 'process2'])
+        ->name('reservation.process2');
+    Route::post('/reservation-process-2', [ClientReservationController::class, 'storeProcess2'])
+        ->name('reservation.process2.store');
+
+    Route::get('/reservation-process-3', [ClientReservationController::class, 'process3'])
+        ->name('reservation.process3');
+
+    Route::get('/reservation/package-menu', [ClientReservationController::class, 'packageMenu'])
+    ->name('reservation.package-menu');
+    Route::post('/reservation/package-menu', [ClientReservationController::class, 'storePackageMenu'])
+    ->name('reservation.package-menu.store');
+    Route::get('/reservation/process-4', [ClientReservationController::class, 'process4'])
+    ->name('reservation.process4');
+
+    Route::get('/reservation/process-5', [ClientReservationController::class, 'process5'])
+    ->name('reservation.process5');
+    Route::post('/reservation/cancel', [ClientReservationController::class, 'cancel'])
+    ->name('reservation.cancel');
+
+    Route::post('/reservation/confirm', [ClientReservationController::class, 'confirm'])
+    ->name('reservation.confirm');
+        Route::get('/reservation/done', [ClientReservationController::class, 'done'])
+        ->name('reservation.done');
+            Route::get('/reservation/customize-menu', [MenuController::class, 'customize'])
+        ->name('reservation.customize-menu');
+Route::post('/reservation/customize-menu', [ClientReservationController::class, 'storeCustomMenu'])
+    ->name('reservation.customize-menu.store');
+});
+
+
+//packages controller
+
+Route::get('/package', [\App\Http\Controllers\Client\PackageController::class, 'index'])->name('package');
+
+//menu controller
+Route::get('/menu', [\App\Http\Controllers\Client\MenuController::class, 'index'])->name('menu');
 
 // ======================================================
 // AUTH ROUTES

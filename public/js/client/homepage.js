@@ -36,12 +36,10 @@
     });
   });
 
-  function reserveNowStub() {
-    window.location.href = "reservation-process-1.html";
-  }
-  const reserveNowNavBtn = document.getElementById('reserveNowNavBtn');
-  if (reserveNowNavBtn) reserveNowNavBtn.addEventListener('click', reserveNowStub);
-  document.querySelectorAll('.reserve-now-btn').forEach((btn) => {
-    btn.addEventListener('click', reserveNowStub);
-  });
+function reserveNowStub() {
+  window.location.href = "/reservation-process-1";
+}
+document.querySelectorAll('.reserve-now-btn').forEach((btn) => {
+  btn.addEventListener('click', reserveNowStub);
+});
 })();

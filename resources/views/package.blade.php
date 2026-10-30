@@ -23,14 +23,14 @@
     <a href="{{ route('home') }}" >Home</a>
     <a href="{{ route('about-us') }}">About Us</a>
     <a href="{{ route('package') }}" class="active">Packages</a>
-    <a href="#">Menu</a>
-    <a href="#">Gallery</a>
-    <a href="#">Contact</a>
+    <a href="{{ route('menu') }}">Menu</a>
+    <a href="{{ route('gallery') }}">Gallery</a>
+    <a href="{{ route('contact') }}">Contact</a>
   </nav>
   <div class="header-actions">
-<button type="button" class="btn-reserve" id="reserveNowNavBtn">
+<a href="{{ route('reservation.process1') }}" class="btn-reserve" id="reserveNowNavBtn">
     <i class="fa-regular fa-calendar-check"></i> Reserve Now
-</button>
+</a>
 
 @guest
     <a href="{{ route('login') }}" class="btn-outline-nav">
@@ -68,11 +68,52 @@
 <a href="{{ route('add-ons') }}" class="btn" id="addOnsTab">Add - ons</a>
 </div>
 
-  <!-- Package list -->
-  <div class="section-empty-note mb-4">
-    <i class="bi bi-box-seam"></i>
-    No packages available yet
-  </div>
+<!-- Package list -->
+@if($packages->count())
+    <div class="row g-4">
+        @foreach($packages as $package)
+            <div class="col-md-4">
+                <div class="package-card">
+                    @if($package->photo)
+                        <img src="{{ asset('storage/' . $package->photo) }}" alt="{{ $package->package_name }}" class="package-img">
+                    @else
+                        <div class="package-img package-img-empty"></div>
+                    @endif
+
+                    <div class="package-body">
+                        <h5>{{ $package->package_name }}</h5>
+                        <p class="text-muted mb-1">{{ $package->category }}</p>
+
+<p>{{ $package->description }}</p>
+
+@if(!empty($package->inclusions))
+    <div class="package-inclusions">
+        <strong>Package Inclusions:</strong>
+        <ul>
+            @foreach($package->inclusions as $inclusion)
+                <li>{{ $inclusion }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+<p>{{ $package->guest_min }} - {{ $package->guest_max }} guests</p>
+
+
+                        <div class="package-footer">
+                            <strong>₱{{ number_format($package->price, 2) }}</strong>
+                            <a href="{{ route('reservation.process1') }}" class="btn btn-success">Reserve</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+@else
+    <div class="text-center py-5">
+        <p>No packages available yet</p>
+    </div>
+@endif
 
   <!-- Custom Packages -->
   <div class="custom-pkg-bar">
@@ -87,11 +128,11 @@
 </div>
 
 <!-- Footer -->
-<footer class="site-footer">
-  <div class="logo-circle">🍽️</div>
-  <div class="footer-text">Lolay's<br>FOOD STATION &amp; CATERING SERVICES</div>
-</footer>
-
+<?php include 'footer.html'; ?>
+<script>
+  window.packageData = @json($packages);
+  window.initialPackageId = @json(session('reservation.step3.package_id'));
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 <script src="{{ asset('js/client/homepage.js')}}"></script>
 </body>

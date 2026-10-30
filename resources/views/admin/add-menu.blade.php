@@ -19,9 +19,24 @@
       <div class="sidebar d-flex flex-column">
         <div class="brand-box">
           <div class="brand-logo">
-             <img src="{{ asset('image/lolaysLogo.jpg') }}" alt="">
+                  <a href="{{ route('admin.logo') }}">
+    <img src="{{ $businessProfile->logo_url }}" alt="Business Logo">
+</a>
+                  
           </div>
-          <div class="brand-name">Lolay's Catering<br>Services</div>
+            @php
+    $businessName = trim(
+        $businessProfile->business_name ?? "Lolay's Catering Services"
+    );
+
+    $words = preg_split('/\s+/', $businessName);
+    $firstLine = implode(' ', array_slice($words, 0, 2));
+    $secondLine = implode(' ', array_slice($words, 2));
+@endphp
+
+<div class="brand-name">
+    {{ $firstLine }}@if($secondLine !== '')<br>{{ $secondLine }}@endif
+</div>
         </div>
         <nav class="flex-grow-1">
 <nav class="flex-grow-1">
@@ -49,16 +64,12 @@
     <a href="{{ route('admin.customer') }}" class="nav-link-custom">
         <i class="bi bi-person"></i> Customer
     </a>
+    <a href="{{ route('admin.archive') }}" class="nav-link-custom "><i class="bi bi-archive"></i> Archive</a>
+    <a href="{{ route('admin.audit') }}" class="nav-link-custom "><i class="bi bi-clipboard-check"></i> Audit Logs</a>
 
-    <a href="reports.html" class="nav-link-custom">
-        <i class="bi bi-bar-chart"></i> Reports
-    </a>
+<a href="{{ route('admin.reports') }}" class="nav-link-custom"><i class="bi bi-bar-chart"></i> Reports</a>
 
-    <a href="reviews.html" class="nav-link-custom">
-        <i class="bi bi-star"></i> Reviews
-    </a>
-
-    <a href="settings.html" class="nav-link-custom">
+    <a href="{{ route('admin.settings') }}" class="nav-link-custom">
         <i class="bi bi-gear"></i> Settings
     </a>
 
@@ -88,7 +99,52 @@
           <p class="page-subtitle">Create a new menu item and assign it to a category.</p>
         </div>
         <div class="d-flex align-items-center gap-3">
-          <button class="icon-btn"><i class="bi bi-bell"></i></button>
+          @auth
+  @php
+    $unreadCount = auth()->user()->unreadNotifications()->count();
+    $recentNotifications = auth()->user()->notifications()->latest()->take(5)->get();
+  @endphp
+
+  <div class="dropdown">
+    <button class="icon-btn position-relative border-0 bg-transparent"
+            type="button"
+            data-bs-toggle="dropdown"
+            data-bs-auto-close="outside"
+            aria-expanded="false"
+            aria-label="Notifications">
+      <i class="bi bi-bell"></i>
+      @if($unreadCount > 0)
+        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">
+          {{ $unreadCount > 99 ? '99+' : $unreadCount }}
+        </span>
+      @endif
+    </button>
+
+    <div class="dropdown-menu dropdown-menu-end p-0 shadow" style="width: 320px;">
+      <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+        <strong>Notifications</strong>
+        @if($unreadCount > 0)
+          <form method="POST" action="{{ route('notifications.readAll') }}">
+            @csrf
+            <button class="btn btn-link btn-sm p-0 text-decoration-none">Mark all as read</button>
+          </form>
+        @endif
+      </div>
+
+      <div style="max-height: 320px; overflow-y: auto;">
+        @forelse($recentNotifications as $notif)
+          <div class="px-3 py-2 border-bottom {{ $notif->read_at ? '' : 'bg-light' }}">
+            <div class="fw-semibold small">{{ $notif->data['title'] ?? 'Notification' }}</div>
+            <div class="small text-muted">{{ $notif->data['message'] ?? '' }}</div>
+            <div class="text-secondary" style="font-size: 12px;">{{ $notif->created_at->diffForHumans() }}</div>
+          </div>
+        @empty
+          <p class="text-center text-muted py-4 mb-0 small">Wala pang notifications.</p>
+        @endforelse
+      </div>
+    </div>
+  </div>
+@endauth
           <div class="d-flex align-items-center gap-2">
             <div class="admin-avatar admin-avatar-placeholder"><i class="bi bi-person-fill"></i></div>
             <div>
@@ -128,22 +184,25 @@
     <div class="col-md-6">
       <label class="form-label-custom">Category <span class="req">*</span></label>
       <select id="itemCategory" name="category" class="form-select form-control-custom" required>
-        <option value="" selected disabled>Select category</option>
-        <option>Appetizer</option>
-        <option>Main Dish</option>
-        <option>Rice</option>
-        <option>Drinks</option>
-        <option>Dessert</option>
-        <option>Add-on</option>
+        <<option value="">Select category</option>
+    <option value="pasta">Pasta</option>
+    <option value="vegetable">Vegetable</option>
+    <option value="salad">Salad</option>
+    <option value="beef">Beef</option>
+    <option value="chicken">Chicken</option>
+    <option value="pork">Pork</option>
+    <option value="fish">Fish</option>
+    <option value="dessert">Dessert</option>
+    <option value="juice">Juice</option>
       </select>
     </div>
-    <div class="col-md-6">
-      <label class="form-label-custom">Price <span class="req">*</span></label>
-      <div class="price-input-wrap">
-        <span class="price-prefix">₱</span>
-        <input type="number" id="itemPrice" name="price" class="form-control form-control-custom price-input" placeholder="e.g. 350" value="" required>
-      </div>
-    </div>
+<div class="col-md-6">
+  <label class="form-label-custom">Price</label>
+  <div class="price-input-wrap">
+    <span class="price-prefix">₱</span>
+    <input type="number" id="itemPrice" name="price" class="form-control form-control-custom price-input" placeholder="e.g. 350" value="" min="0" step="0.01">
+  </div>
+</div>
 
     <div class="col-md-6">
       <label class="form-label-custom">Status</label>

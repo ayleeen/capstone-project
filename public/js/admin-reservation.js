@@ -7,7 +7,8 @@
 // RESERVATION DATA FROM LARAVEL
 // ------------------------------------------------------------
 
-const reservations = Object.values(window.reservationData || {});
+const reservations = Object.values(window.reservationData || {})
+    .sort((a, b) => b.id - a.id);   // latest added on top
 
 // Keep track of the last filtered list
 let lastFilteredList = reservations;
@@ -34,8 +35,9 @@ const statUpcoming = document.getElementById('statUpcoming');
 
 const newReservationBtn = document.getElementById('newReservationBtn');
 
-const detailsPanel = document.getElementById('detailsPanel');
-const detailsPanelBody = document.getElementById('detailsPanelBody');
+const viewModalEl = document.getElementById('viewReservationModal');
+const viewModal = viewModalEl ? new bootstrap.Modal(viewModalEl) : null;
+const detailsPanelBody = document.getElementById('viewModalBody');
 const detailsPanelTitle = document.getElementById('detailsPanelTitle');
 
 
@@ -577,70 +579,42 @@ function renderPagination(totalPages) {
 
 function applyFilters(resetPage = true) {
 
-    const q =
-        searchInput.value.trim().toLowerCase();
+    const q = searchInput.value.trim().toLowerCase();
+    const status = statusFilter.value;
+    const eventType = eventTypeFilter.value;
 
-    const status =
-        statusFilter.value;
+    const filtered = reservations.filter(function (r) {
 
-    const eventType =
-        eventTypeFilter.value;
+        const eventTypeText = String(
+            EVENT_TYPE_LABELS[r.event_type] || r.event_type || ''
+        );
 
+        const resId = 'RES-' + String(r.id).padStart(4, '0');
 
-    const filtered =
-        reservations.filter(function (r) {
+        const haystack = [
+            resId,
+            r.id,
+            r.full_name,
+            r.event_title,
+            eventTypeText,
+            r.package,
+            r.email,
+            r.phone,
+            r.location
+        ].join(' ').toLowerCase();
 
-            const client =
-                String(r.full_name || '').toLowerCase();
+        const matchesSearch = !q || haystack.includes(q);
+        const matchesStatus = !status || r.status === status;
+        const matchesEventType = !eventType || r.event_type === eventType;
 
-            const eventTypeText =
-                String(
-                    EVENT_TYPE_LABELS[r.event_type] ||
-                    r.event_type ||
-                    ''
-                ).toLowerCase();
-
-            const packageName =
-                String(r.package || '').toLowerCase();
-
-            const id =
-                String(r.id || '').toLowerCase();
-
-
-            const matchesSearch =
-                !q ||
-                client.includes(q) ||
-                eventTypeText.includes(q) ||
-                packageName.includes(q) ||
-                id.includes(q);
-
-
-            const matchesStatus =
-                !status ||
-                r.status === status;
-
-
-            const matchesEventType =
-                !eventType ||
-                r.event_type === eventType;
-
-
-            return (
-                matchesSearch &&
-                matchesStatus &&
-                matchesEventType
-            );
-
-        });
-
+        return matchesSearch && matchesStatus && matchesEventType;
+    });
 
     lastFilteredList = filtered;
-
 
     if (resetPage) {
         currentPage = 1;
     }
-
 
     renderRows(filtered);
 }
@@ -794,7 +768,14 @@ function renderDetailsPanel(r) {
         paymentLabels[r.payment_status] ||
         r.payment_status ||
         'Unpaid';
+        
+    const proofUrl = r.proof_of_payment || '';
 
+    const proofHtml = proofUrl
+        ? (/\.pdf$/i.test(proofUrl)
+            ? `<a href="${esc(proofUrl)}" target="_blank" rel="noopener">View PDF</a>`
+            : `<a href="${esc(proofUrl)}" target="_blank" rel="noopener"><img src="${esc(proofUrl)}" alt="Proof of payment" style="max-width:100%; max-height:340px; border-radius:10px;"></a>`)
+        : `<div class="detail-value light">No proof of payment uploaded.</div>`;
 
     detailsPanelBody.innerHTML = `
 
@@ -1052,7 +1033,10 @@ function renderDetailsPanel(r) {
 
         </div>
 
-
+            <div class="detail-note" style="display:block;">
+       <div class="detail-label" style="margin-bottom:8px;">Proof of Payment</div>
+       ${proofHtml}
+   </div>               
         <div class="details-actions">
 
             <button
@@ -1166,6 +1150,7 @@ function renderDetailsPanel(r) {
             openCancelConfirm(r.id);
 
         });
+
 }
 
 
@@ -1193,13 +1178,13 @@ function openDetailsPanel(id) {
     renderDetailsPanel(r);
 
 
-    detailsPanel.classList.add('show');
+   viewModal.show();
 }
 
 
 function closeDetailsPanel() {
 
-    detailsPanel.classList.remove('show');
+    viewModal.hide();
 
 }
 
@@ -1645,7 +1630,7 @@ function openEditPanel(id) {
     renderEditPanel(r);
 
 
-    detailsPanel.classList.add('show');
+   viewModal.show();
 }
 
 
@@ -1928,30 +1913,30 @@ document
 // NEW RESERVATION
 // ------------------------------------------------------------
 
-const newReservationModalEl =
-    document.getElementById('newReservationModal');
 
-const newReservationModal =
-    newReservationModalEl
-        ? new bootstrap.Modal(newReservationModalEl)
-        : null;
+const newReservationModalEl = document.getElementById('newReservationModal');
+const newReservationModal = newReservationModalEl
+    ? new bootstrap.Modal(newReservationModalEl)
+    : null;
 
+if (!newReservationBtn) {
+    console.error('Button #newReservationBtn not found on this page.');
+}
+if (!newReservationModalEl) {
+    console.error('Modal #newReservationModal not found. Check the modal id in your Blade file.');
+}
 
-newReservationBtn?.addEventListener(
-    'click',
-    function () {
+function openNewReservation() {
+    document.getElementById('newReservationForm')?.reset();
+    newReservationModal?.show();
+}
 
-        const form =
-            document.getElementById('newReservationForm');
+newReservationBtn?.addEventListener('click', openNewReservation);
 
-
-        form?.reset();
-
-
-        newReservationModal?.show();
-
-    }
-);
+// Opens automatically from the dashboard "New Reservation" quick action
+if (new URLSearchParams(window.location.search).get('new') === '1') {
+    openNewReservation();
+}
 
 
 // IMPORTANT:

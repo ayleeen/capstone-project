@@ -27,14 +27,25 @@
 
                 <div class="brand-box">
 
-                    <div class="brand-logo">
-                        <img src="{{ asset('image/lolaysLogo.jpg') }}" alt="Lolay's Logo">
-                    </div>
+                             <div class="brand-logo">
+                  <a href="{{ route('admin.logo') }}">
+    <img src="{{ $businessProfile->logo_url }}" alt="Business Logo">
+</a>
+                  
+          </div>
+            @php
+    $businessName = trim(
+        $businessProfile->business_name ?? "Lolay's Catering Services"
+    );
 
-                    <div class="brand-name">
-                        Lolay's Catering<br>
-                        Services
-                    </div>
+    $words = preg_split('/\s+/', $businessName);
+    $firstLine = implode(' ', array_slice($words, 0, 2));
+    $secondLine = implode(' ', array_slice($words, 2));
+@endphp
+
+<div class="brand-name">
+    {{ $firstLine }}@if($secondLine !== '')<br>{{ $secondLine }}@endif
+</div>
 
                 </div>
 
@@ -69,18 +80,12 @@
                         <i class="bi bi-person"></i>
                         Customer
                     </a>
+                    <a href="{{ route('admin.archive') }}" class="nav-link-custom "><i class="bi bi-archive"></i> Archive</a>
+                    <a href="{{ route('admin.audit') }}" class="nav-link-custom "><i class="bi bi-clipboard-check"></i> Audit Logs</a>
 
-                    <a href="reports.html" class="nav-link-custom">
-                        <i class="bi bi-bar-chart"></i>
-                        Reports
-                    </a>
+                   <a href="{{ route('admin.reports') }}" class="nav-link-custom"><i class="bi bi-bar-chart"></i> Reports</a>
 
-                    <a href="reviews.html" class="nav-link-custom">
-                        <i class="bi bi-star"></i>
-                        Reviews
-                    </a>
-
-                    <a href="settings.html" class="nav-link-custom">
+                    <a href="{{ route('admin.settings') }}" class="nav-link-custom">
                         <i class="bi bi-gear"></i>
                         Settings
                     </a>
@@ -163,9 +168,52 @@
 
                 <div class="d-flex align-items-center gap-3">
 
-                    <div class="icon-btn">
-                        <i class="bi bi-bell"></i>
-                    </div>
+@auth
+  @php
+    $unreadCount = auth()->user()->unreadNotifications()->count();
+    $recentNotifications = auth()->user()->notifications()->latest()->take(5)->get();
+  @endphp
+
+  <div class="dropdown">
+    <button class="icon-btn position-relative border-0 bg-transparent"
+            type="button"
+            data-bs-toggle="dropdown"
+            data-bs-auto-close="outside"
+            aria-expanded="false"
+            aria-label="Notifications">
+      <i class="bi bi-bell"></i>
+      @if($unreadCount > 0)
+        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">
+          {{ $unreadCount > 99 ? '99+' : $unreadCount }}
+        </span>
+      @endif
+    </button>
+
+    <div class="dropdown-menu dropdown-menu-end p-0 shadow" style="width: 320px;">
+      <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+        <strong>Notifications</strong>
+        @if($unreadCount > 0)
+          <form method="POST" action="{{ route('notifications.readAll') }}">
+            @csrf
+            <button class="btn btn-link btn-sm p-0 text-decoration-none">Mark all as read</button>
+          </form>
+        @endif
+      </div>
+
+      <div style="max-height: 320px; overflow-y: auto;">
+        @forelse($recentNotifications as $notif)
+          <div class="px-3 py-2 border-bottom {{ $notif->read_at ? '' : 'bg-light' }}">
+            <div class="fw-semibold small">{{ $notif->data['title'] ?? 'Notification' }}</div>
+            <div class="small text-muted">{{ $notif->data['message'] ?? '' }}</div>
+            <div class="text-secondary" style="font-size: 12px;">{{ $notif->created_at->diffForHumans() }}</div>
+          </div>
+        @empty
+          <p class="text-center text-muted py-4 mb-0 small">Wala pang notifications.</p>
+        @endforelse
+      </div>
+    </div>
+  </div>
+@endauth
 
                     <div class="d-flex align-items-center gap-2">
 
@@ -428,25 +476,14 @@
 
                                 <table class="table menu-table mb-2">
 
-                                    <thead>
+                                  
+<thead>
+    <tr>
+        <th style="width:85%;">Inclusion</th>
+        <th style="width:15%;">Action</th>
+    </tr>
+</thead>
 
-                                        <tr>
-
-                                            <th style="width:55%;">
-                                                Menu Items
-                                            </th>
-
-                                            <th style="width:35%;">
-                                                Category
-                                            </th>
-
-                                            <th style="width:10%;">
-                                                Action
-                                            </th>
-
-                                        </tr>
-
-                                    </thead>
 
                                     <tbody id="menuRows">
                                         <!-- rows injected by JavaScript -->
@@ -462,7 +499,7 @@
                                 id="addMenuItemBtn"
                             >
                                 <i class="fa-solid fa-plus me-1"></i>
-                                Add Menu Item
+                                Add Inclusion
                             </button>
 
                         </div>
@@ -649,7 +686,13 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 
-<script src="{{ asset('edit-package.js') }}"></script>
+<script>
+    window.EXISTING_INCLUSIONS = @json($package->inclusions ?? []);
+    window.OLD_INCLUSIONS = @json(old('inclusions', []));
+</script>
+
+
+<script src="{{ asset('js/edit-package.js') }}"></script>
 
 </body>
 </html>

@@ -310,6 +310,18 @@
 
 </div>
 
+<script>
+  setInterval(async () => {
+    try {
+      const res = await fetch("{{ route('verification.status') }}", {
+        headers: { 'Accept': 'application/json' }
+      });
+      const data = await res.json();
+      if (data.verified) window.location.href = "{{ route('home') }}";
+    } catch (e) {}
+  }, 3000);
+</script>
+
 </body>
 </html>
-```
+

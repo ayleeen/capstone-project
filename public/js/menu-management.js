@@ -1,198 +1,361 @@
-// menu-management.js
+document.addEventListener('DOMContentLoaded', function () {
 
-// No sample data — populate these from your backend/API.
-const menuItems = [];
-const categories = [];
+    const form = document.getElementById('filterForm');
+    const input = document.getElementById('searchInput');
 
-let activeTab = 'all'; // 'all' | 'inactive'
 
-const tableBody       = document.getElementById('tableBody');
-const tableFooter      = document.getElementById('tableFooter');
-const searchInput      = document.getElementById('searchInput');
-const categoryFilter   = document.getElementById('categoryFilter');
-const statusFilter     = document.getElementById('statusFilter');
-const sortFilter        = document.getElementById('sortFilter');
-const tabAll            = document.getElementById('tabAll');
-const tabInactive       = document.getElementById('tabInactive');
-const categoriesList    = document.getElementById('categoriesList');
-const addNewMenuBtn     = document.getElementById('addNewMenuBtn');
-const manageCategoryBtn = document.getElementById('manageCategoryBtn');
+    /*
+    =========================================================
+    SEARCH / FILTER / PAGINATION
+    =========================================================
+    */
 
-const statTotalItems      = document.getElementById('statTotalItems');
-const statTotalCategories = document.getElementById('statTotalCategories');
-const statPopularCategory = document.getElementById('statPopularCategory');
-const statTotalSale       = document.getElementById('statTotalSale');
+    if (form && input) {
 
-function fmtPrice(n){
-  return '₱' + Number(n || 0).toLocaleString();
-}
+        let timer;
+        let controller;
 
-function renderStats(){
-  statTotalItems.textContent = menuItems.filter(i => i.status === 'Active').length;
-  statTotalCategories.textContent = categories.length;
 
-  if(categories.length){
-    const top = categories.slice().sort((a,b) => (b.count||0) - (a.count||0))[0];
-    statPopularCategory.textContent = top?.name || '—';
-  } else {
-    statPopularCategory.textContent = '—';
-  }
+        function searchUrl() {
 
-  const totalSale = menuItems.reduce((sum, i) => sum + (Number(i.price) || 0), 0);
-  statTotalSale.textContent = fmtPrice(totalSale);
-}
+            const params = new URLSearchParams(
+                new FormData(form)
+            );
 
-function getFilteredList(){
-  let list = menuItems.slice();
+            return form.action + '?' + params.toString();
+        }
 
-  if(activeTab === 'inactive'){
-    list = list.filter(i => i.status === 'Inactive');
-  }
 
-  const q = (searchInput?.value || '').trim().toLowerCase();
-  if(q){
-    list = list.filter(i =>
-      i.name.toLowerCase().includes(q) ||
-      (i.desc || '').toLowerCase().includes(q)
-    );
-  }
+        async function load(url) {
 
-  const cat = categoryFilter?.value;
-  if(cat && cat !== 'All Categories'){
-    list = list.filter(i => i.category === cat);
-  }
+            if (controller) {
+                controller.abort();
+            }
 
-  const status = statusFilter?.value;
-  if(status && status !== 'All Status'){
-    list = list.filter(i => i.status === status);
-  }
+            controller = new AbortController();
 
-  switch(sortFilter?.value){
-    case 'Oldest First': list.sort((a,b) => a.id - b.id); break;
-    case 'Newest First': list.sort((a,b) => b.id - a.id); break;
-    case 'Price: High to Low': list.sort((a,b) => b.price - a.price); break;
-    case 'Price: Low to High': list.sort((a,b) => a.price - b.price); break;
-  }
 
-  return list;
-}
+            try {
 
-function renderTable(){
-  const list = getFilteredList();
+                const res = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    signal: controller.signal
+                });
 
-  if(list.length === 0){
-    tableBody.innerHTML = `
-      <tr>
-        <td colspan="5">
-          <div class="empty-state-menu">
-            <i class="bi bi-egg-fried"></i>
-            No menu items found
-          </div>
-        </td>
-      </tr>
-    `;
-    tableFooter.textContent = `Showing 0 of ${menuItems.length} items`;
-    return;
-  }
 
-  tableBody.innerHTML = list.map(item => `
-    <tr data-id="${item.id}">
-      <td>
-        <div class="d-flex align-items-center gap-2">
-          <img class="item-thumb-menu" src="${item.img || ''}" alt="${item.name}">
-          <div>
-            <div class="item-name-menu">${item.name}</div>
-            <div class="item-desc-menu">${item.desc || ''}</div>
-          </div>
-        </div>
-      </td>
-      <td><span class="cat-swatch" style="background:${item.categoryColor || '#eee'};"></span></td>
-      <td>${fmtPrice(item.price)}</td>
-      <td><span class="status-pill-menu ${item.status === 'Inactive' ? 'inactive' : ''}">${item.status}</span></td>
-      <td>
-        <div class="d-flex align-items-center gap-1">
-          <button class="action-icon-btn-menu" title="View" data-action="view"><i class="bi bi-eye"></i></button>
-          <button class="action-icon-btn-menu" title="Edit" data-action="edit"><i class="bi bi-pencil"></i></button>
-          <button class="action-icon-btn-menu delete" title="Delete" data-action="delete"><i class="bi bi-trash"></i></button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
+                const html = await res.text();
 
-  tableFooter.textContent = `Showing ${list.length} of ${menuItems.length} items`;
 
-  tableBody.querySelectorAll('[data-action="delete"]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const row = e.target.closest('tr');
-      const id = parseInt(row.dataset.id, 10);
-      const idx = menuItems.findIndex(i => i.id === id);
-      if(idx > -1 && confirm('Delete this menu item?')){
-        menuItems.splice(idx, 1);
-        renderAll();
-      }
+                const doc = new DOMParser()
+                    .parseFromString(html, 'text/html');
+
+
+                /*
+                Replace table and tabs
+                */
+
+                ['.table-card', '.menu-tabs'].forEach(function (sel) {
+
+                    const current = document.querySelector(sel);
+
+                    const fresh = doc.querySelector(sel);
+
+
+                    if (current && fresh) {
+
+                        current.innerHTML = fresh.innerHTML;
+
+                    }
+
+                });
+
+
+                history.replaceState(
+                    null,
+                    '',
+                    url
+                );
+
+
+            } catch (err) {
+
+                if (err.name !== 'AbortError') {
+
+                    console.error(err);
+
+                }
+
+            }
+
+        }
+
+
+        /*
+        LIVE SEARCH
+        */
+
+        input.addEventListener('input', function () {
+
+            clearTimeout(timer);
+
+
+            timer = setTimeout(function () {
+
+                load(searchUrl());
+
+            }, 250);
+
+        });
+
+
+        /*
+        ENTER / SUBMIT
+        */
+
+        form.addEventListener('submit', function (e) {
+
+            e.preventDefault();
+
+            clearTimeout(timer);
+
+            load(searchUrl());
+
+        });
+
+        /*
+        CATEGORY / STATUS / SORT — AJAX FILTERING
+        */
+
+        ['categoryFilter', 'statusFilter', 'sortFilter'].forEach(function (id) {
+            const filter = document.getElementById(id);
+
+            if (filter) {
+                filter.addEventListener('change', function () {
+                    clearTimeout(timer);
+                    load(searchUrl());
+                });
+            }
+        });
+
+
+        /*
+        PAGINATION
+        */
+
+        document.addEventListener('click', function (e) {
+
+            const link = e.target.closest(
+                '.table-card .custom-pagination a'
+            );
+
+
+            if (!link) {
+                return;
+            }
+
+
+            e.preventDefault();
+
+            load(link.href);
+
+        });
+
+    }
+
+
+
+    /*
+    =========================================================
+    VIEW MENU  (opens a pop-up modal)
+    =========================================================
+    */
+
+    // ---- Pop-up styles (added once) ----
+    if (!document.getElementById('menuViewModalStyles')) {
+
+        const st = document.createElement('style');
+
+        st.id = 'menuViewModalStyles';
+
+        st.textContent = `
+            .mvp-content{ border:none; border-radius:18px; overflow:hidden; position:relative; }
+            .mvp-close{
+                position:absolute; top:12px; right:12px; z-index:10;
+                width:34px; height:34px; border:none; border-radius:50%;
+                background:rgba(255,255,255,.92); color:#3a3f47; cursor:pointer;
+                display:flex; align-items:center; justify-content:center;
+                box-shadow:0 2px 8px rgba(0,0,0,.15);
+            }
+            .mvp-close:hover{ background:#fff; }
+            .mvp-img-wrap{ position:relative; width:100%; height:240px; background:#f1f3f2; }
+            .mvp-img{ width:100%; height:100%; object-fit:cover; display:block; }
+            .mvp-status{
+                position:absolute; left:16px; bottom:14px;
+                font-size:11px; font-weight:700; padding:5px 14px; border-radius:999px;
+                display:inline-flex; align-items:center; gap:6px;
+            }
+            .mvp-status.active{ background:#d6f5d6; color:#256330; }
+            .mvp-status.inactive{ background:#e9ecef; color:#5b6472; }
+            .mvp-body{ padding:20px 26px 8px; }
+            .mvp-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+            .mvp-cat{ background:#e6f4e8; color:#256330; font-size:11px; font-weight:700; padding:4px 12px; border-radius:999px; }
+            .mvp-id{ font-size:11px; color:#8a8f98; font-weight:600; }
+            .mvp-name{ margin:0 0 4px; font-size:21px; font-weight:700; color:#1c1c1c; }
+            .mvp-price{ font-size:20px; font-weight:700; color:#2f7d3c; margin-bottom:12px; }
+            .mvp-desc{ font-size:13px; color:#3a3f47; line-height:1.6; margin:0 0 6px; }
+            .mvp-footer{ display:flex; justify-content:flex-end; gap:10px; padding:14px 26px 22px; }
+            .mvp-btn-close{
+                border:1px solid #ddd; background:#fff; color:#3a3f47;
+                font-size:13px; font-weight:600; border-radius:10px; padding:10px 22px; cursor:pointer;
+            }
+            .mvp-btn-close:hover{ background:#f4f4f4; }
+            .mvp-btn-edit{
+                border:1px solid #2f7d3c; background:#2f7d3c; color:#fff;
+                font-size:13px; font-weight:700; border-radius:10px; padding:10px 22px; cursor:pointer;
+                display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+            }
+            .mvp-btn-edit:hover{ background:#256330; border-color:#256330; color:#fff; }
+        `;
+
+        document.head.appendChild(st);
+    }
+
+
+    // ---- Pop-up HTML (added once) ----
+    if (!document.getElementById('menuViewModal')) {
+
+        document.body.insertAdjacentHTML('beforeend', `
+            <div class="modal fade" id="menuViewModal" tabindex="-1" aria-labelledby="mvpName" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
+                    <div class="modal-content mvp-content">
+
+                        <button type="button" class="mvp-close" data-bs-dismiss="modal" aria-label="Close menu details">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+
+                        <div class="mvp-img-wrap">
+                            <img id="mvpImg" class="mvp-img" src="" alt="">
+                            <span class="mvp-status" id="mvpStatus"></span>
+                        </div>
+
+                        <div class="mvp-body">
+                            <div class="mvp-top">
+                                <span class="mvp-cat" id="mvpCat"></span>
+                                <span class="mvp-id" id="mvpId"></span>
+                            </div>
+                            <h2 class="mvp-name" id="mvpName"></h2>
+                            <div class="mvp-price" id="mvpPrice"></div>
+                            <p class="mvp-desc" id="mvpDesc"></p>
+                        </div>
+
+                        <div class="mvp-footer">
+                            
+                            <a href="#" class="mvp-btn-edit" id="mvpEdit">
+                                <i class="bi bi-pencil-fill"></i> Edit Menu
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        `);
+    }
+
+
+    const menuViewModalEl = document.getElementById('menuViewModal');
+
+    const menuViewModal = new bootstrap.Modal(menuViewModalEl);
+
+
+    function openMenuModal(row) {
+
+        const d = row.dataset;
+
+        const active = d.active === '1';
+
+
+        const img = document.getElementById('mvpImg');
+
+        img.src = d.image || '';
+        img.alt = d.name || '';
+        img.style.visibility = 'visible';
+        img.onerror = function () {
+            this.style.visibility = 'hidden';
+        };
+
+
+        const status = document.getElementById('mvpStatus');
+
+        status.className = 'mvp-status ' + (active ? 'active' : 'inactive');
+
+        status.innerHTML = active
+            ? '<i class="bi bi-check-circle-fill"></i> Active'
+            : '<i class="bi bi-x-circle-fill"></i> Inactive';
+
+
+        document.getElementById('mvpCat').textContent =
+            d.category || 'No Category';
+
+        document.getElementById('mvpId').textContent =
+            'MN-' + String(d.id || '').padStart(3, '0');
+
+        document.getElementById('mvpName').textContent =
+            d.name || 'Unnamed Menu';
+
+        document.getElementById('mvpPrice').textContent =
+            '₱' + Number(d.price || 0).toLocaleString('en-PH', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+
+        document.getElementById('mvpDesc').textContent =
+            d.description || 'No description provided for this menu item.';
+
+        document.getElementById('mvpEdit').href =
+            d.editUrl || '#';
+
+
+        menuViewModal.show();
+    }
+
+
+    // Delegated, so it keeps working after live search / filters / pagination.
+    document.addEventListener('click', function (e) {
+
+        const viewButton = e.target.closest('.js-menu-view');
+
+        if (!viewButton) {
+            return;
+        }
+
+        const row = viewButton.closest('tr');
+
+        if (!row) {
+            return;
+        }
+
+        openMenuModal(row);
+
     });
-  });
-}
 
-function renderCategoryOptions(){
-  if(!categoryFilter) return;
-  const current = categoryFilter.value;
-  categoryFilter.innerHTML = `<option>All Categories</option>` +
-    categories.map(c => `<option>${c.name}</option>`).join('');
-  categoryFilter.value = current || 'All Categories';
-}
 
-function renderCategoriesList(){
-  if(categories.length === 0){
-    categoriesList.innerHTML = `<div class="category-empty" id="categoriesEmpty">No categories yet.</div>`;
-    return;
-  }
 
-  categoriesList.innerHTML = categories.map(c => `
-    <div class="category-row">
-      <div class="category-dot" style="background:${c.color || '#999'};">${(c.name || '?').charAt(0).toUpperCase()}</div>
-      <div class="category-name">${c.name}</div>
-      <div class="category-count">${c.count || 0}</div>
-    </div>
-  `).join('');
-}
+    /*
+    =========================================================
+    MANAGE CATEGORY
+    =========================================================
+    */
 
-function renderAll(){
-  renderStats();
-  renderCategoryOptions();
-  renderCategoriesList();
-  renderTable();
-}
+    document
+        .getElementById('manageCategoryBtn')
+        ?.addEventListener('click', function () {
 
-// Tabs
-tabAll?.addEventListener('click', () => {
-  activeTab = 'all';
-  tabAll.classList.add('active');
-  tabInactive.classList.remove('active');
-  renderTable();
+            alert(
+                'Manage Category — hindi pa ito naka-connect.'
+            );
+
+        });
+
 });
-tabInactive?.addEventListener('click', () => {
-  activeTab = 'inactive';
-  tabInactive.classList.add('active');
-  tabAll.classList.remove('active');
-  renderTable();
-});
-
-// Filters
-searchInput?.addEventListener('input', renderTable);
-categoryFilter?.addEventListener('change', renderTable);
-statusFilter?.addEventListener('change', renderTable);
-sortFilter?.addEventListener('change', renderTable);
-
-// Actions
-addNewMenuBtn?.addEventListener('click', () => {
-  window.location.href = 'add-menu.html';
-});
-
- manageCategoryBtn = document.getElementById('manageCategoryBtn');
-
-manageCategoryBtn?.addEventListener('click', () => {
-  alert('Manage Category — hindi pa ito naka-connect. Sabihin mo kung gusto mo itong gawing gumagana.');
-});
-
-renderAll();
