@@ -87,11 +87,17 @@
 
 </div>
 
+
 <script>
-  window.packageData = @json($packages);
-  window.initialPackageId = @json(session('reservation.step3.package_id'));
+    window.packageData = @json($packages);
+
+    window.initialPackageId = @json(
+        session('reservation.step3.package_id')
+    );
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 <script src="{{ asset('js/client/package-menu.js') }}"></script>
+
 </body>
 </html>

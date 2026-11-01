@@ -103,8 +103,9 @@
     <div class="card need-help" style="margin-top:18px;">
       <h3>Need Help?</h3>
       <p>Our team is here to assist you with event planning.</p>
-      <div class="contact-row"><span class="ico">&#128222;</span> 0988 - 254 - 0454</div>
-      <div class="contact-row"><span class="ico">&#9993;</span> lulaykinemeshu@gmail.com</div>
+      <div class="contact-row"><span class="ico">&#128222;</span>09876543234</div>
+      <div class="contact-row"><span class="ico">&#9993;</span>
+lolaycatering@gmail.com</div>
     </div>
   </div>
 
@@ -174,10 +175,15 @@
                   <label class="form-label mb-1">Start Time:</label>
                   <input type="time" class="form-control" name="start_time" id="modalStartTime" required>
                 </div>
-                <div class="mb-3">
-                  <label class="form-label mb-1">End Time:</label>
-                  <input type="time" class="form-control" name="end_time" id="modalEndTime" required>
-                </div>
+<div class="mb-3">
+    <label class="form-label mb-1">End Time (Automatic - 4 Hours):</label>
+    <input type="time"
+           class="form-control"
+           name="end_time"
+           id="modalEndTime"
+           readonly
+           required>
+</div>
 
                 <div class="pax-label">Available Pax <span class="small">(Number of Guest)</span></div>
                 <div class="pax-counter">
@@ -192,7 +198,7 @@
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Back</button>
           <button type="submit" class="btn btn-continue text-white" id="modalContinueBtn">Continue to Event Details</button>
         </div>
       </form>

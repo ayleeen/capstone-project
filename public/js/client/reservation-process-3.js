@@ -16,6 +16,6 @@ document.getElementById('cancelBtn').addEventListener('click', (e) => {
   e.preventDefault();
   const confirmCancel = confirm('Go back to Step 2: Event Details? Your menu selection progress will be discarded.');
   if (confirmCancel) {
-    window.location.href = 'reservation-process-2.html';
+    window.location.href = '/reservation-process-2';
   }
 });

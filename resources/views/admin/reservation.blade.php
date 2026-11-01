@@ -1005,10 +1005,12 @@
                             'deleteUrl' => route('admin.reservation.destroy', $r->id),
                             'cancelUrl' => route('admin.reservation.cancel', $r->id),
                             'updateUrl' => route('admin.reservation.update', $r->id),
-                            'sendConfirmationUrl' => route(
-                                'admin.reservation.sendConfirmation',
-                                $r->id
-                            ),
+                            'sendConfirmationUrl' => route('admin.reservation.sendConfirmation', $r->id ),
+                            'price_per_head'   => $r->price_per_head,
+                            'custom_menu'      => $r->custom_menu ?? [],
+                            'menu_sets'        => $r->menu_sets ?? [],
+                            'addons'           => $r->addons ?? [],
+                            'food_restriction' => $r->food_restriction,
                         ]
                     ];
                 })

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\MenuItem;
 use Illuminate\Http\Request;
+use App\Models\AddonPrice;
 
 class MenuItemController extends Controller
 {
@@ -70,39 +71,51 @@ public function index(Request $request)
         return view('admin.add-menu');
     }
 
-    public function store(Request $request)
-    {
-        $data = $this->validated($request);
 
-        if ($request->hasFile('image')) {
-            $data['image_path'] = $request->file('image')->store('menu-items', 'public');
+public function store(Request $request)
+{
+    $data = $this->validated($request);
+    unset($data['addon_prices']);
+
+    if ($request->hasFile('image')) {
+        $data['image_path'] = $request->file('image')->store('menu-items', 'public');
+    }
+
+    $menuItem = MenuItem::create($data);
+
+    $this->syncAddonPrices($menuItem, $request);
+
+    return redirect()->route('admin.menu')->with('success', 'Menu item added.');
+}
+
+
+public function edit(MenuItem $menuItem)
+{
+    $menuItem->load('addonPrices');
+
+    return view('admin.edit-menu', compact('menuItem'));
+}
+
+public function update(Request $request, MenuItem $menuItem)
+{
+    $data = $this->validated($request);
+    unset($data['addon_prices']);
+
+    if ($request->hasFile('image')) {
+        if ($menuItem->image_path) {
+            \Storage::disk('public')->delete($menuItem->image_path);
         }
 
-        MenuItem::create($data);
-
-        return redirect()->route('admin.menu')->with('success', 'Menu item added.');
+        $data['image_path'] = $request->file('image')->store('menu-items', 'public');
     }
 
-    public function edit(MenuItem $menuItem)
-    {
-        return view('admin.edit-menu', compact('menuItem'));
-    }
+    $menuItem->update($data);
 
-    public function update(Request $request, MenuItem $menuItem)
-    {
-        $data = $this->validated($request);
+    $this->syncAddonPrices($menuItem, $request);
 
-        if ($request->hasFile('image')) {
-            if ($menuItem->image_path) {
-                \Storage::disk('public')->delete($menuItem->image_path);
-            }
-            $data['image_path'] = $request->file('image')->store('menu-items', 'public');
-        }
+    return redirect()->route('admin.menu')->with('success', 'Menu item updated.');
+}
 
-        $menuItem->update($data);
-
-        return redirect()->route('admin.menu')->with('success', 'Menu item updated.');
-    }
 
     public function destroy(MenuItem $menuItem)
     {
@@ -115,21 +128,46 @@ public function index(Request $request)
         return redirect()->route('admin.menu')->with('success', 'Menu item deleted.');
     }
 
-    private function validated(Request $request): array
-    {
-        $data = $request->validate([
-            'name'        => 'required|string|max:255',
-            'description' => 'required|string',
-            'category' => 'required|in:pasta,vegetable,salad,beef,chicken,pork,fish,dessert,juice',
-            'price'    => 'nullable|numeric|min:0',
-            'is_active'   => 'sometimes|boolean',
-            'prep_time'   => 'nullable|string|max:100',
-            'spicy_level' => 'nullable|in:Mild,Medium,Spicy,Very Spicy',
-            'image'       => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
-        ]);
 
-        $data['is_active'] = $request->has('is_active');
+private function validated(Request $request): array
+{
+    $data = $request->validate([
+        'name'        => 'required|string|max:255',
+        'description' => 'required|string',
+        'category'    => 'required|in:pasta,vegetable,salad,beef,chicken,pork,fish,dessert,juice',
+        'price'       => 'nullable|numeric|min:0',
+        'is_active'  => 'sometimes|boolean',
+        'is_addon'   => 'sometimes|boolean',
 
-        return $data;
+        'addon_prices'    => 'required_if:is_addon,1|array',
+        'addon_prices.30' => 'required_if:is_addon,1|numeric|min:0',
+        'addon_prices.40' => 'required_if:is_addon,1|numeric|min:0',
+        'addon_prices.50' => 'required_if:is_addon,1|numeric|min:0',
+
+        'prep_time'   => 'nullable|string|max:100',
+        'spicy_level' => 'nullable|in:Mild,Medium,Spicy,Very Spicy',
+        'image'       => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+    ]);
+
+    $data['is_active'] = $request->has('is_active');
+    $data['is_addon'] = $request->boolean('is_addon');
+
+    return $data;
+}
+            
+private function syncAddonPrices(MenuItem $menuItem, Request $request): void
+{
+    if (!$menuItem->is_addon) {
+        $menuItem->addonPrices()->delete();
+        return;
     }
+
+    foreach ([30, 40, 50] as $servings) {
+        $menuItem->addonPrices()->updateOrCreate(
+            ['servings' => $servings],
+            ['price' => $request->input("addon_prices.$servings")]
+        );
+    }
+}
+
 }

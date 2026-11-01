@@ -50,12 +50,9 @@
 </section>
 
 @php
-  $s1 = $reservation['step1'];
-  $s2 = $reservation['step2'];
-  $total = $package->price ?? 0;
-  $down = $total * 0.5;
-  $remaining = $total - $down;
-  $date = \Carbon\Carbon::parse($s1['selected_date']);
+    $s1 = $reservation['step1'];
+    $s2 = $reservation['step2'];
+    $date = \Carbon\Carbon::parse($s1['selected_date']);
 @endphp
 
 <div class="container" style="max-width:1080px;">
@@ -108,12 +105,56 @@
 
         <h3 class="card-title">Reservation Summary</h3>
 
-        <div id="priceRows">
-          <div class="sum-row">
-            <span>{{ $package->package_name ?? 'Package' }}</span>
-            <span>₱{{ number_format($total, 2) }}</span>
-          </div>
+<div id="priceRows">
+@if($isCustom)
+
+    <div class="sum-row">
+        <span>Custom Menu (₱{{ number_format($perHead, 2) }}/head)</span>
+        <span>₱{{ number_format($perHead, 2) }} × {{ number_format($pax) }} pax</span>
+    </div>
+
+    <div class="summary-row">
+        <span>Custom Menu Total</span>
+        <span>₱{{ number_format($customTotal, 2) }}</span>
+    </div>
+
+    {{-- MENU SETS --}}
+    @foreach ($menuSets as $set)
+
+        <div class="summary-row">
+            <span>
+                <strong>Set {{ $set['set_number'] }}</strong>
+                <small class="d-block">{{ $set['pax'] }} pax</small>
+            </span>
         </div>
+
+        @foreach ($set['items'] as $item)
+            <div class="summary-row">
+                <span>
+                    <small>{{ ucfirst($item->category) }}</small>
+                    {{ $item->name }}
+                </span>
+                <span>Included</span>
+            </div>
+        @endforeach
+
+    @endforeach
+
+    {{-- EXISTING ADD-ONS --}}
+    @foreach ($addons as $a)
+        <div class="summary-row">
+            <span>Add-on: {{ $a['name'] }} ({{ $a['servings'] }} pax)</span>
+            <span>₱{{ number_format($a['price'], 2) }}</span>
+        </div>
+    @endforeach
+{{-- Sub Total row dito, gamit ang $total --}}
+    @else
+        <div class="sum-row">
+            <span>{{ $packageName }}</span>
+            <span>₱{{ number_format($total, 2) }}</span>
+        </div>
+    @endif
+</div>
 
         <hr class="summary-divider">
 
@@ -204,6 +245,6 @@
 @endif
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
-<script src="{{ asset('js/client/reservation-process-5.js') }}"></script>
+<!-- <script src="{{ asset('js/client/reservation-process-5.js') }}"></script> -->
 </body>
 </html>

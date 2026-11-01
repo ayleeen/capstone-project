@@ -184,7 +184,7 @@
     <div class="col-md-6">
       <label class="form-label-custom">Category <span class="req">*</span></label>
       <select id="itemCategory" name="category" class="form-select form-control-custom" required>
-        <<option value="">Select category</option>
+        <option value="">Select category</option>
     <option value="pasta">Pasta</option>
     <option value="vegetable">Vegetable</option>
     <option value="salad">Salad</option>
@@ -214,6 +214,91 @@
       </div>
       <div class="form-hint">Inactive package won't be visible to customers.</div>
     </div>
+    
+<!-- Add-on Settings -->
+<div class="col-12">
+  <hr>
+  <div class="form-check form-switch">
+    <input
+      class="form-check-input"
+      type="checkbox"
+      id="isAddon"
+      name="is_addon"
+      value="1"
+      {{ old('is_addon') ? 'checked' : '' }}
+    >
+    <label class="form-check-label fw-semibold" for="isAddon">
+      This is an Add-on
+    </label>
+  </div>
+  <small class="text-muted">
+    Enable this if the dish will be offered as an additional item with separate pricing.
+  </small>
+</div>
+
+<!-- Add-on Pricing -->
+<div class="col-12 d-none" id="addonPricingSection">
+  <div class="p-3 rounded border bg-light">
+    <h6 class="fw-semibold mb-3">Add-on Pricing</h6>
+    <p class="text-muted small">
+      Set the individual price for each serving tier.
+    </p>
+
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label-custom">30 Pax Price <span class="req">*</span></label>
+        <div class="price-input-wrap">
+          <span class="price-prefix">₱</span>
+          <input
+            type="number"
+            name="addon_prices[30]"
+            class="form-control form-control-custom price-input"
+            placeholder="e.g. 1500"
+            min="0"
+            step="0.01"
+            value="{{ old('addon_prices.30') }}"
+            disabled
+          >
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label-custom">40 Pax Price <span class="req">*</span></label>
+        <div class="price-input-wrap">
+          <span class="price-prefix">₱</span>
+          <input
+            type="number"
+            name="addon_prices[40]"
+            class="form-control form-control-custom price-input"
+            placeholder="e.g. 2000"
+            min="0"
+            step="0.01"
+            value="{{ old('addon_prices.40') }}"
+            disabled
+          >
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label-custom">50 Pax Price <span class="req">*</span></label>
+        <div class="price-input-wrap">
+          <span class="price-prefix">₱</span>
+          <input
+            type="number"
+            name="addon_prices[50]"
+            class="form-control form-control-custom price-input"
+            placeholder="e.g. 2500"
+            min="0"
+            step="0.01"
+            value="{{ old('addon_prices.50') }}"
+            disabled
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
   </div>
 </div>
 
@@ -318,7 +403,48 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const checkbox = document.getElementById('isAddon');
+    const section = document.getElementById('addonPricingSection');
+    const inputs = section.querySelectorAll('input');
+
+    function toggleAddonPricing() {
+        const enabled = checkbox.checked;
+
+        section.classList.toggle('d-none', !enabled);
+
+        inputs.forEach(input => {
+            input.disabled = !enabled;
+            input.required = enabled;
+        });
+    }
+
+    checkbox.addEventListener('change', toggleAddonPricing);
+
+    toggleAddonPricing();
+});
+</script>
+
 <script src="{{ asset('js/add-menu.js') }}"></script>
+```
+
+### Step 8.3 — Important controller adjustment
+
+May isang detail sa database mo: ang `menu_items.price` ay hindi nullable. Kaya kahit add-on ang dish, kailangan pa rin itong magkaroon ng regular `price` value sa database.
+
+Sa `validated()` method ng controller, bago ang `return $data;`, idagdag:
+
+```php
+$data['price'] = $data['price'] ?? 0;
+```
+
+Hindi ito ang magiging add-on price. Ang tunay na add-on prices ay manggagaling sa `addon_prices` table.
+
+---
+
+Kapag tapos na ang tatlong changes, sabihin mong **done**. Sunod natin ang `edit-menu.blade.php` para puwedeng baguhin ng admin ang add-on prices kahit existing na ang dish.
 
 </body>
 </html>

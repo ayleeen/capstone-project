@@ -340,16 +340,18 @@ required
 <div class="col-md-6">
       <label class="form-label-custom">Category <span class="req">*</span></label>
       <select id="itemCategory" name="category" class="form-select form-control-custom" required>
-        <<option value="">Select category</option>
-    <option value="pasta">Pasta</option>
-    <option value="vegetable">Vegetable</option>
-    <option value="salad">Salad</option>
-    <option value="beef">Beef</option>
-    <option value="chicken">Chicken</option>
-    <option value="pork">Pork</option>
-    <option value="fish">Fish</option>
-    <option value="dessert">Dessert</option>
-    <option value="juice">Juice</option>
+        
+<option value="">Select category</option>
+<option value="pasta" @selected(old('category', $menuItem->category) === 'pasta')>Pasta</option>
+<option value="vegetable" @selected(old('category', $menuItem->category) === 'vegetable')>Vegetable</option>
+<option value="salad" @selected(old('category', $menuItem->category) === 'salad')>Salad</option>
+<option value="beef" @selected(old('category', $menuItem->category) === 'beef')>Beef</option>
+<option value="chicken" @selected(old('category', $menuItem->category) === 'chicken')>Chicken</option>
+<option value="pork" @selected(old('category', $menuItem->category) === 'pork')>Pork</option>
+<option value="fish" @selected(old('category', $menuItem->category) === 'fish')>Fish</option>
+<option value="dessert" @selected(old('category', $menuItem->category) === 'dessert')>Dessert</option>
+<option value="juice" @selected(old('category', $menuItem->category) === 'juice')>Juice</option>
+
       </select>
     </div>
 
@@ -401,6 +403,76 @@ Inactive menu items won't be visible to customers.
 <label class="form-label-custom">
 Price <span class="req">*</span>
 </label>
+
+<!-- ADD-ON SETTINGS -->
+<div class="col-12">
+    <hr>
+
+    <div class="form-check form-switch">
+        <input
+            class="form-check-input"
+            type="checkbox"
+            id="isAddon"
+            name="is_addon"
+            value="1"
+            @checked(old('is_addon', $menuItem->is_addon))
+        >
+
+        <label class="form-check-label fw-semibold" for="isAddon">
+            This is an Add-on
+        </label>
+    </div>
+
+    <small class="text-muted">
+        Enable this if the dish will be offered as an additional item.
+    </small>
+</div>
+
+<!-- ADD-ON PRICING -->
+<div
+    class="col-12 {{ old('is_addon', $menuItem->is_addon) ? '' : 'd-none' }}"
+    id="addonPricingSection"
+>
+    <div class="p-3 rounded border bg-light">
+
+        <h6 class="fw-semibold mb-3">Add-on Pricing</h6>
+
+        <p class="text-muted small">
+            Set the individual price for each serving tier.
+        </p>
+
+        <div class="row g-3">
+
+            @foreach([30, 40, 50] as $servings)
+                @php
+                    $savedPrice = $menuItem->addonPrices
+                        ->firstWhere('servings', $servings)?->price;
+                @endphp
+
+                <div class="col-md-4">
+                    <label class="form-label-custom">
+                        {{ $servings }} Pax Price <span class="req">*</span>
+                    </label>
+
+                    <div class="price-input-wrap">
+                        <span class="price-prefix">₱</span>
+
+                        <input
+                            type="number"
+                            name="addon_prices[{{ $servings }}]"
+                            class="form-control form-control-custom price-input addon-price-input"
+                            placeholder="e.g. 1500"
+                            min="0"
+                            step="0.01"
+                            value="{{ old('addon_prices.' . $servings, $savedPrice) }}"
+                        >
+                    </div>
+                </div>
+            @endforeach
+
+        </div>
+    </div>
+</div>
 
 <div class="price-input-wrap">
 
@@ -741,27 +813,32 @@ This is how your menu item will appear to your customer.
 
 <script src="{{ asset('js/edit-menu.js') }}"></script>
 
-<script>
 
+<script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    const status = document.getElementById('itemStatus');
-    const statusLabel = document.getElementById('itemStatusLabel');
+    const checkbox = document.getElementById('isAddon');
+    const section = document.getElementById('addonPricingSection');
+    const inputs = section.querySelectorAll('input');
 
-    if (status && statusLabel) {
+    function toggleAddonPricing() {
+        const enabled = checkbox.checked;
 
-        status.addEventListener('change', function () {
+        section.classList.toggle('d-none', !enabled);
 
-            statusLabel.textContent =
-                this.checked ? 'Active' : 'Inactive';
-
+        inputs.forEach(input => {
+            input.disabled = !enabled;
+            input.required = enabled;
         });
-
     }
 
-});
+    checkbox.addEventListener('change', toggleAddonPricing);
 
+    toggleAddonPricing();
+
+});
 </script>
+
 
 </body>
 </html>

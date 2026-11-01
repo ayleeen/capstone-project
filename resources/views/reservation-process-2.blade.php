@@ -204,7 +204,7 @@
   <div class="alert alert-danger mt-3">{{ implode(', ', $errors->all()) }}</div>
 @endif
       <div class="form-actions">
-<a href="{{ route('reservation.process1') }}" class="btn btn-cancel-outline" id="cancelBtn">Cancel</a>
+<a href="{{ route('reservation.process1') }}" class="btn btn-cancel-outline" id="cancelBtn">Back</a>
         <button type="submit" class="btn btn-continue-full">Continue to Menu Selection</button>
       </div>
     </form>

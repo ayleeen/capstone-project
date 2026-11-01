@@ -143,7 +143,25 @@ cells.push({
   const paxValue = document.getElementById('paxValue');
   const paxInput = document.getElementById('paxInput');
   const calSelectionAlert = document.getElementById('calSelectionAlert');
+  const modalStartTime = document.getElementById('modalStartTime');
+const modalEndTime = document.getElementById('modalEndTime');
 
+modalStartTime.addEventListener('change', function () {
+    if (!this.value) {
+        modalEndTime.value = '';
+        return;
+    }
+
+    const [hours, minutes] = this.value.split(':').map(Number);
+
+    const endDate = new Date();
+    endDate.setHours(hours + 4, minutes, 0, 0);
+
+    const endHours = String(endDate.getHours()).padStart(2, '0');
+    const endMinutes = String(endDate.getMinutes()).padStart(2, '0');
+
+    modalEndTime.value = `${endHours}:${endMinutes}`;
+});
   document.getElementById('paxMinus').addEventListener('click', () => {
     let v = Math.max(PAX_MIN, parseInt(paxValue.textContent, 10) - PAX_STEP);
     paxValue.textContent = v;
@@ -227,11 +245,20 @@ cells.push({
     const start = document.getElementById('modalStartTime').value;
     const end = document.getElementById('modalEndTime').value;
 
-    if (end <= start) {
-      e.preventDefault();
-      alert('End time must be later than start time.');
-      return;
-    }
+const [startHours, startMinutes] = start.split(':').map(Number);
+
+const expectedEnd = new Date();
+expectedEnd.setHours(startHours + 4, startMinutes, 0, 0);
+
+const expectedEndTime =
+    String(expectedEnd.getHours()).padStart(2, '0') + ':' +
+    String(expectedEnd.getMinutes()).padStart(2, '0');
+
+if (end !== expectedEndTime) {
+    e.preventDefault();
+    alert('End time must be exactly 4 hours after start time.');
+    return;
+}
 
     sessionStorage.setItem('reservation', JSON.stringify({
       date: modalSelectedDate.value,

@@ -154,6 +154,262 @@ function getReservation(id) {
 }
 
 
+function customMenuHtml(r) {
+
+    const menuItems = Array.isArray(r.custom_menu)
+        ? r.custom_menu
+        : [];
+
+    const menuSets = Array.isArray(r.menu_sets)
+        ? r.menu_sets
+        : [];
+
+    const addons = Array.isArray(r.addons)
+        ? r.addons
+        : [];
+
+    const pax = Number(r.guests || 0);
+    const pricePerHead = Number(r.price_per_head || 0);
+    const menuTotal = pricePerHead * pax;
+
+    const restriction =
+        r.food_restriction ||
+        r.food_restrictions ||
+        '';
+
+    let html = '';
+
+    // Group dishes by category
+    function renderGroupedItems(items) {
+
+        const groupedMenus = {};
+
+        items.forEach(function (item) {
+
+            const category =
+                String(item.category || 'Other').trim().toLowerCase();
+
+            if (!groupedMenus[category]) {
+                groupedMenus[category] = [];
+            }
+
+            groupedMenus[category].push(item);
+
+        });
+
+        if (!items.length) {
+            return '<div class="detail-value light">No selected dishes found.</div>';
+        }
+
+        return Object.entries(groupedMenus).map(function ([category, dishes]) {
+
+            return `
+                <div class="mb-3">
+
+                    <div style="
+                        font-weight:600;
+                        margin-bottom:6px;
+                        text-transform:capitalize;
+                    ">
+                        ${esc(category)}
+                    </div>
+
+                    <ul class="list-unstyled mb-0">
+
+                        ${dishes.map(function (item) {
+                            return `
+                                <li style="padding:4px 0;">
+                                    <i class="fa-solid fa-check text-success me-2"></i>
+                                    ${esc(item.name || item.menu_name || 'Unnamed dish')}
+                                </li>
+                            `;
+                        }).join('')}
+
+                    </ul>
+
+                </div>
+            `;
+
+        }).join('');
+    }
+
+    // CUSTOM MENU DETAILS
+    if (
+        menuItems.length ||
+        menuSets.length ||
+        pricePerHead > 0 ||
+        restriction
+    ) {
+
+        html += `
+            <div class="detail-note" style="display:block;">
+
+                <div class="detail-label mb-3">
+                    <i class="fa-solid fa-utensils"></i>
+                    Custom Menu Details
+                </div>
+
+                <div class="detail-grid mb-3">
+
+                    <div class="detail-item">
+                        <div>
+                            <div class="detail-label">
+                                Price per Head
+                            </div>
+                            <div class="detail-value">
+                                ${fmtMoney(pricePerHead)}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div>
+                            <div class="detail-label">
+                                Number of Pax
+                            </div>
+                            <div class="detail-value">
+                                ${pax} pax
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div>
+                            <div class="detail-label">
+                                Custom Menu Total
+                            </div>
+                            <div class="detail-value">
+                                ${fmtMoney(menuTotal)}
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="detail-label mb-2">
+                    Selected Dishes
+                </div>
+
+                ${
+                    menuSets.length
+                    ? menuSets.map(function (set, index) {
+
+                        const setItems = Array.isArray(set.items)
+                            ? set.items
+                            : [];
+
+                        const setNumber = Number(set.set_number || index + 1);
+                        const setPax = Number(set.pax || 0);
+
+                        return `
+                            <div class="mb-3 p-3" style="
+                                border:1px solid #dee2e6;
+                                border-radius:8px;
+                            ">
+
+                                <div class="detail-label mb-2">
+                                    Set ${setNumber} — ${setPax} pax
+                                </div>
+
+                                ${renderGroupedItems(setItems)}
+
+                            </div>
+                        `;
+
+                    }).join('')
+                    : renderGroupedItems(menuItems)
+                }
+
+                <div class="mb-3">
+
+                    <div class="detail-label mb-1">
+                        Included Items
+                    </div>
+
+                    <ul class="list-unstyled mb-0">
+                        <li>✓ Steamed Rice (Included)</li>
+                        <li>✓ Purified Drinking Water (Included)</li>
+                    </ul>
+
+                </div>
+
+                <div>
+
+                    <div class="detail-label mb-1">
+                        Food Restrictions
+                    </div>
+
+                    <div class="detail-value light">
+                        ${esc(restriction || 'None specified')}
+                    </div>
+
+                </div>
+
+            </div>
+        `;
+    }
+
+    // ADD-ONS — EXISTING DISPLAY UNCHANGED
+    if (addons.length) {
+
+        html += `
+            <div class="detail-note" style="display:block;">
+
+                <div class="detail-label mb-3">
+                    <i class="fa-solid fa-circle-plus"></i>
+                    Additional Add-ons
+                </div>
+
+                <div style="overflow-x:auto;">
+
+                    <table class="table table-sm align-middle mb-2">
+
+                        <thead>
+                            <tr>
+                                <th>Dish</th>
+                                <th>Servings</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            ${addons.map(function (addon) {
+
+                                return `
+                                    <tr>
+                                        <td>
+                                            ${esc(addon.name || addon.dish_name || 'Unnamed dish')}
+                                        </td>
+
+                                        <td>
+                                            ${esc(addon.servings || 0)}
+                                        </td>
+
+                                        <td class="text-end">
+                                            ${fmtMoney(addon.price)}
+                                        </td>
+                                    </tr>
+                                `;
+
+                            }).join('')}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+        `;
+    }
+
+    return html;
+}
+
+
+
+
 // ------------------------------------------------------------
 // STATISTICS
 // ------------------------------------------------------------
@@ -1032,6 +1288,7 @@ function renderDetailsPanel(r) {
             </div>
 
         </div>
+        ${customMenuHtml(r)}
 
             <div class="detail-note" style="display:block;">
        <div class="detail-label" style="margin-bottom:8px;">Proof of Payment</div>

@@ -109,9 +109,12 @@
     </div>
   </div>
 
-  <div class="text-center choice-cancel">
-    <a href="{{ route('reservation.process2', request()->query()) }}" class="btn btn-cancel-outline" id="cancelBtn">Cancel</a>
-  </div>
+<div class="text-center choice-cancel">
+    <a href="{{ route('reservation.process2') }}"
+       class="btn btn-cancel-outline"
+       id="cancelBtn">
+        Back
+    </a>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>

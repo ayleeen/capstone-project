@@ -313,3 +313,16 @@ nav.main-nav a.active, nav.main-nav a:hover{ color: var(--green); }
   .form-actions{ flex-direction:column-reverse; gap:10px; }
   .form-actions .btn{ width:100%; }
 }
+
+/* Override homepage service-title styling */
+.form-card .service-title {
+    position: static;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    padding: 0;
+    color: #444;
+    background: none;
+    font-size: 13px;
+    margin-bottom: 14px;
+}

@@ -185,6 +185,7 @@ Route::middleware(['auth'])->group(function () {
         '/admin/reservation/{reservation}',
         [ReservationController::class, 'destroy']
     )->name('admin.reservation.destroy');
+    
 });
 
 
@@ -389,6 +390,8 @@ Route::middleware('auth')->group(function () {
         ->name('reservation.customize-menu');
 Route::post('/reservation/customize-menu', [ClientReservationController::class, 'storeCustomMenu'])
     ->name('reservation.customize-menu.store');
+    Route::get('/admin/addon-prices', [\App\Http\Controllers\Admin\AddonPriceController::class, 'index'])->name('admin.addon-prices');
+Route::put('/admin/addon-prices', [\App\Http\Controllers\Admin\AddonPriceController::class, 'update'])->name('admin.addon-prices.update');
 });
 
 

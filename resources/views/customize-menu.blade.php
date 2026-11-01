@@ -95,7 +95,87 @@
     <div class="step-label">Step 5<br>Payment</div>
   </div>
 </div>
+@php $pax = (int) data_get(session('reservation'), 'step1.pax', 0); @endphp
 
+<div class="panel tier-panel mt-3">
+  <div class="panel-title"><i class="bi bi-cash-coin"></i> Choose your price per head</div>
+  <div class="tier-grid" id="tierGrid">
+@php
+  $tierInfo = [
+    400 => '6 dishes · 2 of Chicken/Beef/Pork',
+    500 => '7 dishes · includes Salad',
+    600 => '8 dishes · Pasta or Vegetable',
+    700 => 'All 9 dishes',
+  ];
+@endphp
+@foreach ([400, 500, 600, 700] as $t)
+  <button type="button" class="tier-btn" data-price="{{ $t }}">
+    <strong>₱{{ number_format($t) }}</strong><small>per head</small>
+    <span class="tier-total">₱{{ number_format($t * $pax) }} for {{ $pax }} pax</span>
+    <span class="tier-total">{{ $tierInfo[$t] }}</span>
+  </button>
+@endforeach
+  </div>
+</div>
+
+<!-- MENU SETS PANEL -->
+<div class="menu-sets-panel card mb-4">
+    <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div>
+                <h5 class="mb-1">
+                    <i class="bi bi-collection"></i>
+                    Menu Sets
+                </h5>
+                <small class="text-muted">
+                    Create separate menu sets for your reservation.
+                    Each set can have up to 50 guests.
+                </small>
+            </div>
+
+            <div class="text-end">
+                <span class="badge bg-primary" id="menuSetCount">
+                    0 Sets Created
+                </span>
+                <div class="small text-muted mt-1" id="menuSetLimit">
+                    Loading set requirements...
+                </div>
+            </div>
+        </div>
+
+        <!-- SET LIST -->
+        <div id="menuSetsList" class="d-flex flex-wrap gap-2 mb-3">
+            <div class="text-muted small">
+                No menu sets created yet.
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button"
+                    class="btn btn-primary"
+                    id="createMenuSetBtn">
+                <i class="bi bi-plus-circle"></i>
+                Create Set
+            </button>
+
+            <button type="button"
+                    class="btn btn-outline-primary"
+                    id="duplicateMenuSetBtn"
+                    disabled>
+                <i class="bi bi-copy"></i>
+                Duplicate Active Set
+            </button>
+        </div>
+
+        <small class="text-muted d-block mt-2">
+            Create Set starts with an empty menu. Duplicate Set copies
+            the active set's selections, which you can customize separately.
+        </small>
+
+    </div>
+</div>
+<!-- END MENU SETS PANEL -->
   <!-- Main content -->
   <div class="row g-3 mt-1 mb-4">
 
@@ -149,7 +229,9 @@
           <small id="progressText">0 of 0 courses complete</small>
         </div>
 
-        <div id="customMenu"></div>
+<div id="customMenu"></div>
+<div id="customAddons"></div>
+<div id="cmTotal"></div>
         <!-- Fixed, laging nasa dulo, hindi pinipili -->
 <div class="custom-menu-fixed">
   <section class="cm-course">
@@ -170,10 +252,18 @@
       </div>
     </div>
   </div>
-
+  <div class="panel addon-panel mb-4">
+  <div class="panel-title"><i class="bi bi-plus-circle-fill"></i> Add-ons (optional, per tray)</div>
+  <p class="course-rule">Dagdag na ulam na per serving ang bayad. Idadagdag ito sa Grand Total.</p>
+  <div class="addon-form">
+    <select id="addonDish" class="restriction-input"></select>
+    <select id="addonServings" class="restriction-input"></select>
+    <button type="button" class="btn-course-next" id="addonAddBtn">Add</button>
+  </div>
+</div>
   <!-- Action bar -->
   <div class="action-bar mb-4">
-    <button type="button" class="btn-cancel" id="cancelBtn">Cancel</button>
+    <button type="button" class="btn-cancel" id="cancelBtn">Back</button>
     <button type="button" class="btn-continue" id="continueBtn">Continue to Confirmation</button>
   </div>
 
@@ -217,11 +307,15 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 <script>
-  window.MENU_ITEMS = @json($menuItems);
-  window.NEXT_URL   = "{{ route('reservation.process4') }}";
-  window.CANCEL_URL = "{{ route('reservation.process3') }}";
-  window.SAVE_URL   = "{{ route('reservation.customize-menu.store') }}";
-  window.CSRF       = "{{ csrf_token() }}";
+window.MENU_ITEMS = @json($menuItems);
+window.ADDON_ITEMS = @json($addonItems);
+window.PAX = {{ $pax }};
+window.RESERVATION_DRAFT_ID = @json($draftId);
+
+window.NEXT_URL = "{{ route('reservation.process4') }}";
+window.CANCEL_URL = "{{ route('reservation.process3') }}";
+window.SAVE_URL = "{{ route('reservation.customize-menu.store') }}";
+window.CSRF = "{{ csrf_token() }}";
 </script>
 <script src="{{ asset('js/client/customize-menu.js') }}"></script>
 </body>

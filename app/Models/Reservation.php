@@ -30,13 +30,19 @@ use SoftDeletes, Auditable;
         'total_amount',
         'down_payment',
         'proof_of_payment',
-        'notes',
+'notes','package','package_id','price_per_head','custom_menu','menu_sets','addons','food_restriction',
     ];
 
-    protected $casts = [
-        'start_date' => 'date:F j, Y',
-        'end_date'   => 'date:F j, Y',
-    ];
+
+protected $casts = [
+    'start_date' => 'date:F j, Y',
+    'end_date' => 'date:F j, Y',
+    'price_per_head' => 'integer',
+    'custom_menu' => 'array',
+    'menu_sets' => 'array',
+    'addons' => 'array',
+];
+
 
     public static function monthlyStats(): array
     {
