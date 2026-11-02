@@ -7,6 +7,7 @@ use App\Models\Package;
 use Illuminate\Http\Request;
 use App\Models\Reservation;
 use App\Models\User;
+use App\Models\Customer;
 use App\Notifications\NewReservationNotification;
 use Illuminate\Support\Facades\Notification;
 
@@ -146,8 +147,8 @@ public function packageMenu()
         $data = $request->validate([
             'package_id'       => 'required',
             'food_restriction' => 'nullable|string|max:500',
-        ], [
-            'package_id.required' => 'Please select a package.',
+            ], [
+                'package_id.required' => 'Please select a package.',
         ]);
 
         session(['reservation.step3' => $data]);
@@ -341,17 +342,13 @@ public function confirm(Request $request)
 
     $isCustom = ($r['step3']['type'] ?? null) === 'custom';
 
-
 if ($isCustom) {
     $package = null;
-
     $perHead = (int) $r['step3']['price_per_head'];
 
-    // Get selected add-ons and their prices
     [$addonList, $addonsTotal] = $this->resolveAddons($r['step3']);
 
     $total = ($perHead * (int) $r['step1']['pax']) + $addonsTotal;
-
     $packageName = "Custom Menu (₱{$perHead}/head)";
 
     $menuSets = [];
@@ -359,7 +356,6 @@ if ($isCustom) {
 
     $sets = $r['step3']['menu_sets'] ?? [];
 
-    // Backward compatibility for old reservations
     if (empty($sets) && !empty($r['step3']['menu_ids'])) {
         $sets = [[
             'pax' => (int) $r['step1']['pax'],
@@ -392,13 +388,12 @@ if ($isCustom) {
             'items' => $formattedItems,
         ];
 
-        // Keep the old flat custom_menu format
         $customMenu = array_merge($customMenu, $formattedItems);
     }
 
     $addons = $addonList->values()->all();
 
-}else {
+} else {
     $package = Package::findOrFail($r['step3']['package_id']);
 
     $perHead = null;
@@ -407,10 +402,10 @@ if ($isCustom) {
 
     $customMenu = null;
     $addons = null;
+    $menuSets = null;
 }
 
 $proofPath = $request->file('proof')->store('payment-proofs', 'public');
-
 
 $reservation = Reservation::create([
     'user_id'          => auth()->id(),
@@ -425,35 +420,82 @@ $reservation = Reservation::create([
     'event_title'      => ucfirst($r['step2']['event_type']) . ' Event',
     'location'         => $r['step2']['event_street'],
     'landmark'         => $r['step2']['landmark'] ?? null,
-
     'start_date'       => $r['step1']['selected_date'],
     'end_date'         => $r['step1']['selected_date'],
     'start_time'       => $r['step1']['start_time'],
     'end_time'         => $r['step1']['end_time'],
     'guests'           => $r['step1']['pax'],
-
     'package'          => $packageName,
     'package_id'       => $package?->id,
     'price_per_head'   => $perHead,
     'custom_menu'      => $customMenu,
-    'menu_sets'        => $menuSets ?? null,
+    'menu_sets'        => $menuSets,
     'addons'           => $addons,
-
     'food_restriction' => $r['step3']['food_restriction'] ?? null,
     'notes'            => $r['step2']['special_request'] ?? null,
-
     'total_amount'     => $total,
     'down_payment'     => $total * 0.5,
-
     'proof_of_payment' => $proofPath,
     'status'           => 'pending',
     'payment_status'   => 'partial',
 ]);
 
-    $admins = User::where('is_admin', true)->get();
-    Notification::send($admins, new NewReservationNotification($reservation));
 
-     return redirect()->route('reservation.process5')->with('reservation_success', true);
+// Find existing customer, including soft-deleted records
+$customer = null;
+
+if (auth()->check()) {
+    $customer = Customer::withTrashed()
+        ->where('user_id', auth()->id())
+        ->first();
+}
+
+if (!$customer) {
+    $customer = Customer::withTrashed()
+        ->whereRaw('LOWER(email) = ?', [
+            strtolower(trim($reservation->email))
+        ])
+        ->first();
+}
+
+if ($customer) {
+
+    // Restore customer if previously deleted
+    if ($customer->trashed()) {
+        $customer->restore();
+    }
+
+    // Update customer information
+    $customer->update([
+        'user_id' => $customer->user_id ?: auth()->id(),
+        'name'    => $reservation->full_name,
+        'email'   => $reservation->email,
+        'phone'   => $reservation->phone,
+        'status'  => 'active',
+    ]);
+
+} else {
+
+    // Create new customer
+    Customer::create([
+        'user_id'       => auth()->id(),
+        'name'          => $reservation->full_name,
+        'email'         => $reservation->email,
+        'phone'         => $reservation->phone,
+        'status'        => 'active',
+        'customer_type' => 'new',
+    ]);
+
+}
+
+
+$admins = User::where('is_admin', true)->get();
+Notification::send($admins, new NewReservationNotification($reservation));
+
+// Prevent duplicate reservation submission
+session(['reservation_submitted' => true]);
+
+return redirect()->route('reservation.process5')->with('reservation_success', true);
 
 }
 public function done()
@@ -573,6 +615,61 @@ $cats = $items->map(fn ($i) => strtolower(trim($i->category)));
 
     return response()->json(['ok' => true]);
 }
+public function history()
+{
+    $reservations = Reservation::where('user_id', auth()->id())
+        ->latest()
+        ->get();
+
+    // Larawan ng package para sa card
+    $photos = Package::whereIn('id', $reservations->pluck('package_id')->filter())
+        ->pluck('photo', 'id');
+
+    $statusMap = [
+        'pending'   => 'Pending',
+        'confirmed' => 'Confirmed',
+        'approved'  => 'Confirmed',
+        'completed' => 'Completed',
+        'cancelled' => 'Cancelled',
+        'canceled'  => 'Cancelled',
+        'rejected'  => 'Cancelled',
+    ];
+
+    $reservationsData = $reservations->map(function ($r) use ($photos, $statusMap) {
+        $total = (float) $r->total_amount;
+        $paid  = match (strtolower((string) $r->payment_status)) {
+            'paid' => $total,
+            'partial', 'partially_paid', 'downpayment' => (float) $r->down_payment,
+            default => 0,
+        };
+
+        return [
+            'id'      => 'RSV-' . str_pad($r->id, 5, '0', STR_PAD_LEFT),
+            'title'   => $r->event_title,
+            'type'    => ucwords(str_replace('_', ' ', (string) $r->event_type)),
+            'date'    => \Carbon\Carbon::parse($r->start_date)->format('Y-m-d'),
+            'time'    => substr((string) $r->start_time, 0, 5),
+            'endTime' => substr((string) $r->end_time, 0, 5),
+            'venue'   => $r->location,
+            'guests'  => $r->guests,
+            'status'  => $statusMap[strtolower((string) $r->status)] ?? 'Pending',
+            'total'   => $total,
+            'paid'    => $paid,
+            'txn'     => null,
+            'paidAt'  => null,
+            'image'   => ($photos[$r->package_id] ?? null) ? asset('storage/' . $photos[$r->package_id]) : null,
+        ];
+    })->values();
+
+    $capacity = Reservation::DAILY_CAPACITY;
+
+    $availability = collect(Reservation::bookedGuestsByDate())->map(function ($booked) use ($capacity) {
+        $left = $capacity - (int) $booked;
+        return $left < 50 ? 'unavailable' : ($left < $capacity * 0.3 ? 'limited' : null);
+    })->filter();
+
+    return view('reservation-history', compact('reservationsData', 'availability'));
+}
 private function resolveAddons(array $step3): array
 {
     $rows = $step3['addons'] ?? [];
@@ -602,4 +699,5 @@ private function resolveAddons(array $step3): array
 
     return [$list, $list->sum('price')];
 }
+
 }

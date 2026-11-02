@@ -21,6 +21,7 @@ use App\Http\Controllers\Auth\PhoneLoginController;
 use App\Http\Controllers\Client\MenuController;
 // use App\Http\Controllers\Auth\LoginOtpController;
 
+
 //another way to login
 Route::post('/login/phone/send', [PhoneLoginController::class, 'sendCode'])
     ->middleware(['guest', 'throttle:10,1'])
@@ -394,7 +395,11 @@ Route::post('/reservation/customize-menu', [ClientReservationController::class, 
 Route::put('/admin/addon-prices', [\App\Http\Controllers\Admin\AddonPriceController::class, 'update'])->name('admin.addon-prices.update');
 });
 
+//reservation-history client
 
+
+Route::get('/reservations', [\App\Http\Controllers\Client\ReservationController::class, 'history'])
+    ->name('client.reservations');
 //packages controller
 
 Route::get('/package', [\App\Http\Controllers\Client\PackageController::class, 'index'])->name('package');

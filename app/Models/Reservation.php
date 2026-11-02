@@ -44,22 +44,19 @@ protected $casts = [
 ];
 
 
-    public static function monthlyStats(): array
-    {
-        // Assumed created_at; switch to start_date if your reservation page counts that way
-        $month = static::whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()]);
-
-        return [
-            'total'     => (clone $month)->count(),
-            'pending'   => (clone $month)->where('status', 'pending')->count(),
-            'confirmed' => (clone $month)->where('status', 'confirmed')->count(),
-            'cancelled' => (clone $month)->where('status', 'cancelled')->count(),
-            'sales'     => (clone $month)->where('status', 'confirmed')->sum('total_amount'),
-            'upcoming'  => static::where('status', '!=', 'cancelled')
-                                ->whereBetween('start_date', [now()->startOfDay(), now()->endOfWeek()])
-                                ->count(),
-        ];
-    }
+        public static function monthlyStats(): array
+        {
+            return [
+                'total'     => static::count(),
+                'pending'   => static::where('status', 'pending')->count(),
+                'confirmed' => static::where('status', 'confirmed')->count(),
+                'cancelled' => static::where('status', 'cancelled')->count(),
+                'sales'     => static::where('status', 'confirmed')->sum('total_amount'),
+                'upcoming'  => static::where('status', '!=', 'cancelled')
+                                    ->whereBetween('start_date', [now()->startOfWeek(), now()->endOfWeek()])
+                                    ->count(),
+            ];
+        }
 
     const DAILY_CAPACITY = 1500;
 

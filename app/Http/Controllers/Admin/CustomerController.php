@@ -86,7 +86,9 @@ public function destroy(Customer $customer)
     private function format(Customer $c): array
     {
         $stats = $this->bookingStats($c);
+        if ($c->id == 5) {
 
+}
         return [
             'dbId'   => $c->id,
             'id' => 'CUS-' . $c->created_at->format('Y') . '-' . str_pad($c->id, 3, '0', STR_PAD_LEFT),
@@ -115,30 +117,40 @@ public function destroy(Customer $customer)
         ];
     }
 
-    private function bookingStats(Customer $c): array
-    {
-        $reservations = Reservation::query()
-            ->where(function ($q) use ($c) {
-                $q->whereRaw('LOWER(email) = ?', [strtolower($c->email)]);
-                if ($c->user_id) {
-                    $q->orWhere('user_id', $c->user_id);
-                }
-            })
-            ->where('status', '!=', 'cancelled')
-            ->orderByDesc('start_date')
-            ->get();
 
-        return [
-            'totalBookings' => $reservations->count(),
-            'totalSpent'    => (float) $reservations
-                ->whereIn('status', ['confirmed', 'completed'])
-                ->sum('total_amount'),
-            'bookings'      => $reservations->map(fn ($r) => [
-                'date'   => $r->start_date,
-                'name'   => $r->event_title ?: $r->event_type,
-                'status' => ucfirst($r->status),
-                'price'  => (float) $r->total_amount,
-            ])->values()->all(),
-        ];
+private function bookingStats(Customer $c): array
+{
+    $query = Reservation::query();
+
+    if ($c->user_id !== null) {
+        // Registered account: match by user_id only
+        $query->where('user_id', $c->user_id);
+    } else {
+        // Guest customer: match by email
+        $query->whereRaw('LOWER(TRIM(email)) = ?', [
+            strtolower(trim($c->email))
+        ]);
     }
+
+    $reservations = $query
+        ->where('status', '!=', 'cancelled')
+        ->orderByDesc('start_date')
+        ->get();
+
+    return [
+        'totalBookings' => $reservations->count(),
+
+        'totalSpent' => (float) $reservations
+            ->whereIn('status', ['confirmed', 'completed'])
+            ->sum('total_amount'),
+
+        'bookings' => $reservations->map(fn ($r) => [
+            'date'   => $r->start_date,
+            'name'   => $r->event_title ?: $r->event_type,
+            'status' => ucfirst($r->status),
+            'price'  => (float) $r->total_amount,
+        ])->values()->all(),
+    ];
+}
+
 }

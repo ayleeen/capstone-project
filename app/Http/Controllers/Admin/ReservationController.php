@@ -16,18 +16,8 @@ class ReservationController extends Controller
 {
     public function index(Request $request)
     {
-        $month = Reservation::whereMonth('start_date', now()->month)
-                            ->whereYear('start_date', now()->year);
-
-        $stats = [
-            'total'     => (clone $month)->count(),
-            'pending'   => (clone $month)->where('status', 'pending')->count(),
-            'confirmed' => (clone $month)->where('status', 'confirmed')->count(),
-            'cancelled' => (clone $month)->where('status', 'cancelled')->count(),
-            'sales'     => (clone $month)->where('status', 'confirmed')->sum('total_amount'),
-            'upcoming'  => Reservation::whereBetween('start_date', [now()->startOfWeek(), now()->endOfWeek()])
-                                      ->where('status', '!=', 'cancelled')->count(),
-        ];
+        // Iisang formula para sa dashboard at reservation page (nasa model)
+        $stats = Reservation::monthlyStats();
 
         $query = Reservation::query();
 
