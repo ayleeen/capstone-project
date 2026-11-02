@@ -1,13 +1,14 @@
 <?php
 
 namespace App\Providers;
-
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Illuminate\Auth\Events\Login;
 use App\Models\AuditLog;
 use App\Models\BusinessProfile;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +25,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+         if (app()->environment('production')) {
+        URL::forceScheme('https');
+    }
         // Login Audit Log
         Event::listen(Login::class, function ($e) {
             $u = $e->user;
