@@ -94,7 +94,9 @@ Route::get('/admin/calendar', [CalendarController::class, 'index'])
 // ======================================================
 // PUBLIC PAGES
 // ======================================================
-
+Route::get('/', function () {
+    return redirect('/homepage');
+});
 Route::get('/homepage', function () {
     $packages = Package::where('status', true)
         ->orderBy('category')
