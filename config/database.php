@@ -3,8 +3,11 @@
 use Illuminate\Support\Str;
 use Pdo\Mysql;
 
-return [
 
+return [
+'options' => extension_loaded('pdo_mysql') ? array_filter([
+    PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA', '/etc/ssl/certs/ca-certificates.crt'),
+]) : [],
     /*
     |--------------------------------------------------------------------------
     | Default Database Connection Name
